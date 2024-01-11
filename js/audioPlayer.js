@@ -74,7 +74,7 @@ class AudioPlayer {
         async function sourceOpen() {
             try {
                 // 获取音乐文件的响应流
-                const response = await fetch('./resources/sound.mp3');
+                const response = await fetch('./resources/sound');
 
                 const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg'); // 音频格式需要与文件类型匹配
 
