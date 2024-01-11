@@ -77,7 +77,7 @@ function draw() {
     var HEIGHT = spectrumCanvas.height;
     var centerX = WIDTH / 2;
     var centerY = HEIGHT / 2;
-    var maxRadius = Math.min(WIDTH, HEIGHT) / 3.5;
+    var maxRadius = Math.min(WIDTH, HEIGHT) / 3.8;
     var maxSampleSize = 360;
     var canvasCtx = spectrumCanvas.getContext('2d');
     canvasCtx.imageSmoothingEnabled = true;
@@ -123,7 +123,7 @@ function draw() {
                     smoothedData[i] = (tempArray[prevIndex] + tempArray[i] + tempArray[nextIndex]) / 3;
                 }
             }
-            smoothedData = smoothedData.map(val => val + 20);
+            smoothedData = smoothedData.map(val => val + 40);
             return smoothedData;
         }
 
