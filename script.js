@@ -1,3 +1,5 @@
+var audioContext;
+var analyser;
 // 定义全局变量
 const playPauseButton = document.getElementById('playPause');
 const songProgress = document.getElementById('song-progress');
@@ -39,6 +41,7 @@ playPauseButton.addEventListener('click', function () {
     if (audio.paused) {
         audio.play();
         playPauseButton.style.backgroundImage = "url('./pause_icon.svg')";
+        startVisualizer();
     } else {
         audio.pause();
         playPauseButton.style.backgroundImage = "url('./play_icon.svg')";
@@ -47,38 +50,172 @@ playPauseButton.addEventListener('click', function () {
 
 
 
-
-// 此函数用来模拟一个简单的频谱效果，实际项目中可以使用Web Audio API进行更精确的频率分析
-function drawSpectrumMock() {
-    {
-        const ctx = spectrumCanvas.getContext('2d');
-        const width = spectrumCanvas.width;
-        const height = spectrumCanvas.height;
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = 'rgba(0, 128, 255, 0.7)';
-        // 随机生成柱状图
-        for (let i = 0; i < width / 10; i++) {
-            const barHeight = Math.random() * height / 2;
-            ctx.fillRect(i * 10, height - barHeight, 5, barHeight);
-        }
+function startVisualizer() {
+    if (!audioContext) {
+        // 创建新的AudioContext实例
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        var source = audioContext.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 1024;
+        draw();
+    } else if (audioContext.state === 'suspended') {
+        // 仅在用户点击后恢复AudioContext
+        audioContext.resume().then(() => {
+            console.log("AudioContext resumed!");
+        });
     }
-    {
-        const ctx = bottomSpectrumCanvas.getContext('2d');
-        const width = bottomSpectrumCanvas.width;
-        const height = bottomSpectrumCanvas.height;
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = 'rgba(0, 128, 255, 0.7)';
-        // 随机生成柱状图
-        for (let i = 0; i < width / 10; i++) {
-            const barHeight = Math.random() * height / 2;
-            ctx.fillRect(i * 10, height - barHeight, 5, barHeight);
-        }
-    }
-    requestAnimationFrame(drawSpectrumMock);
 }
 
-// 调用函数来模拟频谱效果
-drawSpectrumMock();
+
+
+function draw() {
+    var bufferLength = analyser.frequencyBinCount;
+    var dataArray = new Uint8Array(bufferLength);
+    var WIDTH = spectrumCanvas.width;
+    var HEIGHT = spectrumCanvas.height;
+    var centerX = WIDTH / 2;
+    var centerY = HEIGHT / 2;
+    var maxRadius = Math.min(WIDTH, HEIGHT) / 2; // 设置最大半径为画布宽高中较小的一半
+    var maxSampleSize = 360; // 设置采样点数量为360，对应于360度
+    var canvasCtx = spectrumCanvas.getContext('2d');
+    function drawVisualizer() {
+        requestAnimationFrame(drawVisualizer);
+
+        analyser.getByteFrequencyData(dataArray);
+
+        // 查找最大非零频域数据的索引
+        var maxIndex = 0;
+        for (var i = 0; i < bufferLength; i++) {
+            if (dataArray[i] !== 0) {
+                maxIndex = i;
+            }
+        }
+
+        // 计算采样并且施加平滑补充
+        var step = (maxIndex + 1) / maxSampleSize;
+        var sampledDataArray = [];
+        var prevIndex = -1;
+        for (var i = 0; i < maxSampleSize; i++) {
+            var index = Math.floor(i * step);
+            if (index === prevIndex) {
+                var nextNonZeroIndex = prevIndex + 1;
+                var middleValue = nextNonZeroIndex < bufferLength ? (dataArray[prevIndex] + dataArray[nextNonZeroIndex]) / 2 : dataArray[prevIndex];
+                sampledDataArray.push(middleValue);
+            } else {
+                sampledDataArray.push(dataArray[index]);
+                prevIndex = index;
+            }
+        }
+        function smoothData(dataArray, sampleSize, smoothingPasses) {
+            const baseValue = dataArray.reduce((acc, val) => acc + val, 0) / (3 * dataArray.length) + 200;
+            let adjustedData = dataArray.map(val => val + baseValue);
+            let smoothedData = [...adjustedData];
+            for (let pass = 0; pass < smoothingPasses; pass++) {
+                let tempArray = [...smoothedData];
+                for (let i = 0; i < dataArray.length; i++) {
+                    let prevIndex = i > 0 ? i - 1 : dataArray.length - 1;
+                    let nextIndex = i < dataArray.length - 1 ? i + 1 : 0;
+                    smoothedData[i] = (tempArray[prevIndex] + tempArray[i] + tempArray[nextIndex]) / 3;
+                }
+            }
+            smoothedData = smoothedData.map(val => val - 80);
+            return smoothedData;
+        }
+
+
+
+        // 在drawVisualizer函数中，在绘制前对sampledDataArray应用平滑函数
+        sampledDataArray = smoothData(sampledDataArray, maxSampleSize, maxSampleSize / 1);
+
+
+        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(centerX, centerY);
+
+        // 使用二次贝塞尔曲线平滑连接点
+        for (var i = 0; i < maxSampleSize; i++) {
+            var value = sampledDataArray[maxSampleSize - i - 1]; // 反向取样用于绘制左侧
+            var percent = value / 255;
+            var height = percent * maxRadius;
+            var angle = Math.PI * 2 / maxSampleSize * i;
+            angle = angle / 2 - Math.PI / 2;
+            var x = centerX + height * Math.cos(angle);
+            var y = centerY + height * Math.sin(angle);
+
+            if (i === 0) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                var midpointX = (prevX + x) / 2;
+                var midpointY = (prevY + y) / 2;
+                canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
+            }
+
+            prevX = x;
+            prevY = y;
+        }
+
+        // 绘制右侧的对称部分
+        for (var i = 0; i < maxSampleSize; i++) {
+            var value = sampledDataArray[i]; // 正向取样用于绘制右侧
+            var percent = value / 255;
+            var height = percent * maxRadius;
+            var angle = Math.PI * 2 / maxSampleSize * i;
+            angle = angle / 2 + Math.PI / 2;
+            var x = centerX + height * Math.cos(angle);
+            var y = centerY + height * Math.sin(angle);
+            if (i == maxSampleSize - 1) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                var midpointX = (prevX + x) / 2;
+                var midpointY = (prevY + y) / 2;
+                canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
+            }
+            prevX = x;
+            prevY = y;
+        }
+
+        canvasCtx.lineTo(centerX, centerY);
+        canvasCtx.closePath();
+        canvasCtx.fillStyle = 'rgba(0, 255, 255, 1)';
+        canvasCtx.fill();
+    }
+
+    drawVisualizer();
+}
+
+// // 此函数用来模拟一个简单的频谱效果，实际项目中可以使用Web Audio API进行更精确的频率分析
+// function drawSpectrumMock() {
+//     {
+//         const ctx = spectrumCanvas.getContext('2d');
+//         const width = spectrumCanvas.width;
+//         const height = spectrumCanvas.height;
+//         ctx.clearRect(0, 0, width, height);
+//         ctx.fillStyle = 'rgba(0, 128, 255, 0.7)';
+//         // 随机生成柱状图
+//         for (let i = 0; i < width / 10; i++) {
+//             const barHeight = Math.random() * height / 2;
+//             ctx.fillRect(i * 10, height - barHeight, 5, barHeight);
+//         }
+//     }
+//     {
+//         const ctx = bottomSpectrumCanvas.getContext('2d');
+//         const width = bottomSpectrumCanvas.width;
+//         const height = bottomSpectrumCanvas.height;
+//         ctx.clearRect(0, 0, width, height);
+//         ctx.fillStyle = 'rgba(0, 128, 255, 0.7)';
+//         // 随机生成柱状图
+//         for (let i = 0; i < width / 10; i++) {
+//             const barHeight = Math.random() * height / 2;
+//             ctx.fillRect(i * 10, height - barHeight, 5, barHeight);
+//         }
+//     }
+//     requestAnimationFrame(drawSpectrumMock);
+// }
+
+// // 调用函数来模拟频谱效果
+// drawSpectrumMock();
 
 
 

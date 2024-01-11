@@ -30,12 +30,17 @@ html {
 
 .spectrum-cover-container {
     position: relative;
-    width: 50%;
+    /* width: 50%; */
     display: flex;
     justify-content: center;
 }
 
-.spectrum-canvas,
+.spectrum-canvas {
+    width: 50vw;
+    height: 50vh;
+}
+
+
 .bottom-spectrum-canvas {
     width: 100%;
     height: 150px;
