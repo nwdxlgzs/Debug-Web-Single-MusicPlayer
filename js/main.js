@@ -81,16 +81,15 @@ ui.listenPlayButtonClick(async () => {
         initAudioPlayer();
     }
 
-    const audio = player.audio;
 
-    if (audio.paused) {
+    if (player.paused) {
         player.play();
         startVisualizer();
     } else {
         player.pause();
     }
 
-    ui.changePlayButtonStatus(!audio.paused);
+    ui.changePlayButtonStatus(!player.paused);
 });
 
 // 进度控制事件
