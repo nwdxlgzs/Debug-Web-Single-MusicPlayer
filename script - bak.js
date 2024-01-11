@@ -49,7 +49,7 @@ playPauseButton.addEventListener('click', function () {
 });
 
 
-const AUDIO_FFTSIZE = 2048;
+
 function startVisualizer() {
     if (!audioContext) {
         // 创建新的AudioContext实例
@@ -58,7 +58,7 @@ function startVisualizer() {
         var source = audioContext.createMediaElementSource(audio);
         source.connect(analyser);
         analyser.connect(audioContext.destination);
-        analyser.fftSize = AUDIO_FFTSIZE;
+        analyser.fftSize = 1024;
         draw();
     } else if (audioContext.state === 'suspended') {
         // 仅在用户点击后恢复AudioContext
@@ -71,34 +71,48 @@ function startVisualizer() {
 
 
 function draw() {
-    const bufferLength = analyser.frequencyBinCount;
+    var bufferLength = analyser.frequencyBinCount;
     var dataArray = new Uint8Array(bufferLength);
-    const WIDTH = spectrumCanvas.width;
-    const HEIGHT = spectrumCanvas.height;
-    const centerX = WIDTH / 2;
-    const centerY = HEIGHT / 2;
-    const maxRadius = Math.min(WIDTH, HEIGHT) / 2;
-    const maxSampleSize = 180;
-    const Layers = Math.floor(AUDIO_FFTSIZE / maxSampleSize);
-    const canvasCtx = spectrumCanvas.getContext('2d');
+    var WIDTH = spectrumCanvas.width;
+    var HEIGHT = spectrumCanvas.height;
+    var centerX = WIDTH / 2;
+    var centerY = HEIGHT / 2;
+    var maxRadius = Math.min(WIDTH, HEIGHT) / 4;
+    var maxSampleSize = 360;
+    var canvasCtx = spectrumCanvas.getContext('2d');
     canvasCtx.imageSmoothingEnabled = true;
-    const rgblayers = [
-        [255, 0, 0],
-        [255, 128, 0],
-        [255, 255, 0],
-        [0, 255, 0],
-        [0, 128, 255],
-        [0, 0, 255],
-        [128, 0, 255],
-        [255, 0, 255],
-        [255, 0, 128],
-    ];
+
     function drawVisualizer() {
         requestAnimationFrame(drawVisualizer);
+
         analyser.getByteFrequencyData(dataArray);
-        const RawBaseArrayAver = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-        function smoothData(dataArray, smoothingPasses, deeplayer) {
-            const baseValue = dataArray.reduce((acc, val) => acc + val, 0) / (3 * dataArray.length) + RawBaseArrayAver + deeplayer;
+
+        // 查找最大非零频域数据的索引
+        var maxIndex = 0;
+        for (var i = 0; i < bufferLength; i++) {
+            if (dataArray[i] !== 0) {
+                maxIndex = i;
+            }
+        }
+        maxIndex = bufferLength;
+
+        // 计算采样并且施加平滑补充
+        var step = (maxIndex + 1) / maxSampleSize;
+        var sampledDataArray = [];
+        var prevIndex = -1;
+        for (var i = 0; i < maxSampleSize; i++) {
+            var index = Math.floor(i * step);
+            if (index === prevIndex) {
+                var nextNonZeroIndex = prevIndex + 1;
+                var middleValue = nextNonZeroIndex < bufferLength ? (dataArray[prevIndex] + dataArray[nextNonZeroIndex]) / 2 : dataArray[prevIndex];
+                sampledDataArray.push(middleValue);
+            } else {
+                sampledDataArray.push(dataArray[index]);
+                prevIndex = index;
+            }
+        }
+        function smoothData(dataArray, sampleSize, smoothingPasses) {
+            const baseValue = dataArray.reduce((acc, val) => acc + val, 0) / (3 * dataArray.length) + 200;
             let adjustedData = dataArray.map(val => val + baseValue);
             let smoothedData = [...adjustedData];
             for (let pass = 0; pass < smoothingPasses; pass++) {
@@ -109,70 +123,66 @@ function draw() {
                     smoothedData[i] = (tempArray[prevIndex] + tempArray[i] + tempArray[nextIndex]) / 3;
                 }
             }
-            smoothedData = smoothedData.map(val => val - 0);
+            smoothedData = smoothedData.map(val => val + 40);
             return smoothedData;
         }
 
+
+
+        // 在drawVisualizer函数中，在绘制前对sampledDataArray应用平滑函数
+        sampledDataArray = smoothData(sampledDataArray, maxSampleSize, maxSampleSize / 4);
+
+
         canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-        for (let lay_i = 0; lay_i < Layers; lay_i++) {
-            var sampledDataArray = dataArray.slice(lay_i * maxSampleSize, (lay_i + 1) * maxSampleSize);
-            // 在drawVisualizer函数中，在绘制前对sampledDataArray应用平滑函数
-            sampledDataArray = smoothData(sampledDataArray, maxSampleSize / 4, lay_i);
-            var prevX = centerX; // 初始化 prevX
-            var prevY = centerY; // 初始化 prevY
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(centerX, centerY);
 
-            canvasCtx.beginPath();
-            canvasCtx.moveTo(centerX, centerY);
+        // 使用二次贝塞尔曲线平滑连接点
+        for (var i = 0; i < maxSampleSize; i++) {
+            var value = sampledDataArray[maxSampleSize - i - 1]; // 反向取样用于绘制左侧
+            var percent = value / 255;
+            var height = percent * maxRadius;
+            var angle = Math.PI * 2 / maxSampleSize * i;
+            angle = angle / 2 - Math.PI / 2;
+            var x = centerX + height * Math.cos(angle);
+            var y = centerY + height * Math.sin(angle);
 
-            // 使用二次贝塞尔曲线平滑连接点
-            for (var i = 0; i < maxSampleSize; i++) {
-                var value = sampledDataArray[maxSampleSize - i - 1]; // 反向取样用于绘制左侧
-                var percent = value / 255;
-                var height = percent * maxRadius;
-                var angle = Math.PI * 2 / maxSampleSize * i;
-                angle = angle / 2 - Math.PI / 2;
-                var x = centerX + height * Math.cos(angle);
-                var y = centerY + height * Math.sin(angle);
-
-                if (i === 0) {
-                    canvasCtx.moveTo(x, y);
-                } else {
-                    var midpointX = (prevX + x) / 2;
-                    var midpointY = (prevY + y) / 2;
-                    canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
-                }
-
-                prevX = x;
-                prevY = y;
+            if (i === 0) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                var midpointX = (prevX + x) / 2;
+                var midpointY = (prevY + y) / 2;
+                canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
             }
 
-            // 绘制右侧的对称部分
-            for (var i = 0; i < maxSampleSize; i++) {
-                var value = sampledDataArray[i]; // 正向取样用于绘制右侧
-                var percent = value / 255;
-                var height = percent * maxRadius;
-                var angle = Math.PI * 2 / maxSampleSize * i;
-                angle = angle / 2 + Math.PI / 2;
-                var x = centerX + height * Math.cos(angle);
-                var y = centerY + height * Math.sin(angle);
-                if (i == maxSampleSize - 1) {
-                    canvasCtx.moveTo(x, y);
-                } else {
-                    var midpointX = (prevX + x) / 2;
-                    var midpointY = (prevY + y) / 2;
-                    canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
-                }
-                prevX = x;
-                prevY = y;
-            }
-
-            canvasCtx.lineTo(centerX, centerY);
-            canvasCtx.closePath();
-            // canvasCtx.fillStyle = 'rgba(0, 255, 255, 1)';
-            const coloi = lay_i % rgblayers.length;
-            canvasCtx.fillStyle = `rgba(${rgblayers[coloi][0]}, ${rgblayers[coloi][1]}, ${rgblayers[coloi][2]}, 1)`;
-            canvasCtx.fill();
+            prevX = x;
+            prevY = y;
         }
+
+        // 绘制右侧的对称部分
+        for (var i = 0; i < maxSampleSize; i++) {
+            var value = sampledDataArray[i]; // 正向取样用于绘制右侧
+            var percent = value / 255;
+            var height = percent * maxRadius;
+            var angle = Math.PI * 2 / maxSampleSize * i;
+            angle = angle / 2 + Math.PI / 2;
+            var x = centerX + height * Math.cos(angle);
+            var y = centerY + height * Math.sin(angle);
+            if (i == maxSampleSize - 1) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                var midpointX = (prevX + x) / 2;
+                var midpointY = (prevY + y) / 2;
+                canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
+            }
+            prevX = x;
+            prevY = y;
+        }
+
+        canvasCtx.lineTo(centerX, centerY);
+        canvasCtx.closePath();
+        canvasCtx.fillStyle = 'rgba(0, 255, 255, 1)';
+        canvasCtx.fill();
     }
 
     drawVisualizer();
