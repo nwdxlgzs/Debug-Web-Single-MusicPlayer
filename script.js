@@ -10,13 +10,18 @@ const bottomSpectrumCanvas = document.getElementById('bottom-spectrum-canvas');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 // 创建Audio对象
-const audio = new Audio();
-audio.src = './sound.mp3'; // 您的音频文件路径
-
+const mediaSource = new MediaSource();
+const audio = document.createElement('audio');
+audio.src = URL.createObjectURL(mediaSource);
+mediaSource.addEventListener('sourceopen', sourceOpen);
+audio.addEventListener('durationchange', () => {
+    if (audio.duration !== Infinity) {
+        audio.onloadedmetadata();
+    }
+});
 audio.onloadedmetadata = function () {
     totalDuration.textContent = formatTime(audio.duration);
 };
-
 audio.addEventListener('timeupdate', function () {
     var progress = (audio.currentTime / audio.duration) * 100;
     songProgress.value = progress;
@@ -35,7 +40,6 @@ function formatTime(time) {
     const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
     return `${minutes}:${formattedSeconds}`;
 }
-
 // 播放暂停按钮功能
 playPauseButton.addEventListener('click', function () {
     if (audio.paused) {
@@ -78,27 +82,46 @@ function draw() {
     const centerX = WIDTH / 2;
     const centerY = HEIGHT / 2;
     const maxRadius = Math.min(WIDTH, HEIGHT) / 2;
-    const maxSampleSize = 180;
-    const Layers = Math.floor(AUDIO_FFTSIZE / maxSampleSize);
+    // const maxSampleSize = 180;
+    // const Layers = Math.floor(AUDIO_FFTSIZE / maxSampleSize);
+    const Layers = 3;
+    const maxSampleSize = Math.floor(AUDIO_FFTSIZE / Layers);
     const canvasCtx = spectrumCanvas.getContext('2d');
     canvasCtx.imageSmoothingEnabled = true;
     const rgblayers = [
-        [255, 0, 0],
-        [255, 128, 0],
-        [255, 255, 0],
-        [0, 255, 0],
-        [0, 128, 255],
-        [0, 0, 255],
-        [128, 0, 255],
-        [255, 0, 255],
-        [255, 0, 128],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+        // [255, 0, 0],
+        // [255, 128, 0],
+        // [255, 255, 0],
+        // [0, 255, 0],
+        // [0, 128, 255],
+        // [0, 0, 255],
+        // [128, 0, 255],
+        // [255, 0, 255],
+        // [255, 0, 128],
     ];
     function drawVisualizer() {
         requestAnimationFrame(drawVisualizer);
         analyser.getByteFrequencyData(dataArray);
+        // 查找最大非零频域数据的索引
+        var maxIndex = 0;
+        for (var i = 0; i < bufferLength; i++) {
+            if (dataArray[i] !== 0) {
+                maxIndex = i;
+            }
+        }
+        const MAX_DrawLayer = Math.floor(maxIndex / maxSampleSize);
         const RawBaseArrayAver = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
         function smoothData(dataArray, smoothingPasses, deeplayer) {
-            const baseValue = dataArray.reduce((acc, val) => acc + val, 0) / (3 * dataArray.length) + RawBaseArrayAver + deeplayer;
+            const baseValue = dataArray.reduce((acc, val) => acc + val, 0) / (3 * dataArray.length) + RawBaseArrayAver;
             let adjustedData = dataArray.map(val => val + baseValue);
             let smoothedData = [...adjustedData];
             for (let pass = 0; pass < smoothingPasses; pass++) {
@@ -115,9 +138,12 @@ function draw() {
 
         canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
         for (let lay_i = 0; lay_i < Layers; lay_i++) {
+            if (lay_i > MAX_DrawLayer) {
+                break;
+            }
             var sampledDataArray = dataArray.slice(lay_i * maxSampleSize, (lay_i + 1) * maxSampleSize);
             // 在drawVisualizer函数中，在绘制前对sampledDataArray应用平滑函数
-            sampledDataArray = smoothData(sampledDataArray, maxSampleSize / 4, lay_i);
+            sampledDataArray = smoothData(sampledDataArray, maxSampleSize / 1, lay_i);
             var prevX = centerX; // 初始化 prevX
             var prevY = centerY; // 初始化 prevY
 
@@ -170,7 +196,7 @@ function draw() {
             canvasCtx.closePath();
             // canvasCtx.fillStyle = 'rgba(0, 255, 255, 1)';
             const coloi = lay_i % rgblayers.length;
-            canvasCtx.fillStyle = `rgba(${rgblayers[coloi][0]}, ${rgblayers[coloi][1]}, ${rgblayers[coloi][2]}, 1)`;
+            canvasCtx.fillStyle = `rgba(${rgblayers[coloi][0]}, ${rgblayers[coloi][1]}, ${rgblayers[coloi][2]}, ${(Layers - coloi) / Layers})`;
             canvasCtx.fill();
         }
     }
@@ -243,3 +269,32 @@ document.addEventListener('click', function (event) {
         volumeControl.style.display = 'none';
     }
 });
+
+
+
+async function sourceOpen() {
+    try {
+        // 获取音乐文件的响应流
+        const response = await fetch('sound');
+        const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg'); // 音频格式需要与文件类型匹配
+
+        const reader = response.body.getReader();
+        const pump = async () => {
+            const { done, value } = await reader.read();
+            if (done) {
+                mediaSource.endOfStream();
+                // audio.play(); // 当音频数据加载完毕后播放
+                return;
+            }
+            sourceBuffer.appendBuffer(value); // 将数据块添加到sourceBuffer
+            await new Promise(resolve => sourceBuffer.onupdateend = resolve);
+            pump();
+        };
+
+        pump();
+    } catch (e) {
+        console.error('Error fetching audio', e);
+        alert("Error on get sound file.");
+    }
+}
+
