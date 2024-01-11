@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>频谱分析器</title>
+</head>
+
+<body>
+    <button id="playPauseButton">Play/Pause</button>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+    <input type="range" id="progressControl" min="0" max="100" step="0.1" value="0">
+    <canvas id="canvas" width="800" height="256"></canvas>
+
+    <script>
+        var audioContext;
+        var analyser;
+        var audio;
+        var playPauseButton = document.getElementById('playPauseButton');
+        var volumeControl = document.getElementById('volumeControl');
+        var progressControl = document.getElementById('progressControl');
+        var canvas = document.getElementById('canvas');
+        var canvasCtx = canvas.getContext('2d');
+
+        // 创建音频元素
+        audio = new Audio();
+        audio.src = './Cloudier-Heartbeat.mp3'; // 您的音频文件路径
+        // audio.controls = true;
+        // document.body.insertBefore(audio, canvas); // 在canvas之前添加音频到body元素
+
+        // 初始设置
+        audio.volume = volumeControl.value;
+        playPauseButton.textContent = audio.paused ? 'Play' : 'Pause';
+
+        // 播放/暂停按钮事件
+        playPauseButton.addEventListener('click', function () {
+            if (audio.paused) {
+                audio.play();
+                startVisualizer();
+            } else {
+                audio.pause();
+            }
+            playPauseButton.textContent = audio.paused ? 'Play' : 'Pause';
+        });
+
+        // 音量控制事件
+        volumeControl.addEventListener('input', function () {
+            audio.volume = this.value;
+        });
+
+        // 进度控制事件
+        progressControl.addEventListener('input', function () {
+            var seekTime = audio.duration * (this.value / 100);
+            audio.currentTime = seekTime;
+        });
+
+        // 音频播放事件，更新进度条
+        audio.addEventListener('timeupdate', function () {
+            var progress = (audio.currentTime / audio.duration) * 100;
+            progressControl.value = progress;
+        });
+        audio.addEventListener('ended', function () {
+            progressControl.value = 0;
+            playPauseButton.textContent = 'Play';
+        });
+
+
+        function startVisualizer() {
+            if (!audioContext) {
+                // 创建新的AudioContext实例
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                var source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                analyser.fftSize = 1024;
+                draw();
+            } else if (audioContext.state === 'suspended') {
+                // 仅在用户点击后恢复AudioContext
+                audioContext.resume().then(() => {
+                    console.log("AudioContext resumed!");
+                });
+            }
+        }
+
+
+
+        function draw() {
+            var bufferLength = analyser.frequencyBinCount;
+            var dataArray = new Uint8Array(bufferLength);
+            var WIDTH = canvas.width;
+            var HEIGHT = canvas.height;
+            var centerX = WIDTH / 2;
+            var centerY = HEIGHT / 2;
+            var maxRadius = Math.min(WIDTH, HEIGHT) / 2; // 设置最大半径为画布宽高中较小的一半
+            var maxSampleSize = 360; // 设置采样点数量为360，对应于360度
+
+            function drawVisualizer() {
+                requestAnimationFrame(drawVisualizer);
+
+                analyser.getByteFrequencyData(dataArray);
+
+                // 查找最大非零频域数据的索引
+                var maxIndex = 0;
+                for (var i = 0; i < bufferLength; i++) {
+                    if (dataArray[i] !== 0) {
+                        maxIndex = i;
+                    }
+                }
+
+                // 计算采样并且施加平滑补充
+                var step = (maxIndex + 1) / maxSampleSize;
+                var sampledDataArray = [];
+                var prevIndex = -1;
+                for (var i = 0; i < maxSampleSize; i++) {
+                    var index = Math.floor(i * step);
+                    if (index === prevIndex) {
+                        var nextNonZeroIndex = prevIndex + 1;
+                        var middleValue = nextNonZeroIndex < bufferLength ? (dataArray[prevIndex] + dataArray[nextNonZeroIndex]) / 2 : dataArray[prevIndex];
+                        sampledDataArray.push(middleValue);
+                    } else {
+                        sampledDataArray.push(dataArray[index]);
+                        prevIndex = index;
+                    }
+                }
+                function smoothData(dataArray, sampleSize, smoothingPasses) {
+                    const baseValue = dataArray.reduce((acc, val) => acc + val, 0) / (3 * dataArray.length) + 200;
+                    let adjustedData = dataArray.map(val => val + baseValue);
+                    let smoothedData = [...adjustedData];
+                    for (let pass = 0; pass < smoothingPasses; pass++) {
+                        let tempArray = [...smoothedData];
+                        for (let i = 0; i < dataArray.length; i++) {
+                            let prevIndex = i > 0 ? i - 1 : dataArray.length - 1;
+                            let nextIndex = i < dataArray.length - 1 ? i + 1 : 0;
+                            smoothedData[i] = (tempArray[prevIndex] + tempArray[i] + tempArray[nextIndex]) / 3;
+                        }
+                    }
+                    smoothedData = smoothedData.map(val => val - 100);
+                    return smoothedData;
+                }
+                
+
+
+                // 在drawVisualizer函数中，在绘制前对sampledDataArray应用平滑函数
+                sampledDataArray = smoothData(sampledDataArray, maxSampleSize, maxSampleSize / 1);
+
+
+                canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(centerX, centerY);
+
+                // 使用二次贝塞尔曲线平滑连接点
+                for (var i = 0; i < maxSampleSize; i++) {
+                    var value = sampledDataArray[maxSampleSize - i - 1]; // 反向取样用于绘制左侧
+                    var percent = value / 255;
+                    var height = percent * maxRadius;
+                    var angle = Math.PI * 2 / maxSampleSize * i;
+                    angle = angle / 2 - Math.PI / 2;
+                    var x = centerX + height * Math.cos(angle);
+                    var y = centerY + height * Math.sin(angle);
+
+                    if (i === 0) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        var midpointX = (prevX + x) / 2;
+                        var midpointY = (prevY + y) / 2;
+                        canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
+                    }
+
+                    prevX = x;
+                    prevY = y;
+                }
+
+                // 绘制右侧的对称部分
+                for (var i = 0; i < maxSampleSize; i++) {
+                    var value = sampledDataArray[i]; // 正向取样用于绘制右侧
+                    var percent = value / 255;
+                    var height = percent * maxRadius;
+                    var angle = Math.PI * 2 / maxSampleSize * i;
+                    angle = angle / 2 + Math.PI / 2;
+                    var x = centerX + height * Math.cos(angle);
+                    var y = centerY + height * Math.sin(angle);
+                    if (i == maxSampleSize - 1) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        var midpointX = (prevX + x) / 2;
+                        var midpointY = (prevY + y) / 2;
+                        canvasCtx.quadraticCurveTo(prevX, prevY, midpointX, midpointY);
+                    }
+                    prevX = x;
+                    prevY = y;
+                }
+
+                canvasCtx.lineTo(centerX, centerY);
+                canvasCtx.closePath();
+                canvasCtx.fillStyle = 'rgba(0, 255, 255, 1)';
+                canvasCtx.fill();
+            }
+
+            drawVisualizer();
+        }
+
+
+
+        // function draw() {
+        //     var bufferLength = analyser.frequencyBinCount;
+        //     var dataArray = new Uint8Array(bufferLength);
+        //     var maxSampleSize = 150; // 最大采样数据数
+
+        //     function drawVisualizer() {
+        //         requestAnimationFrame(drawVisualizer);
+
+        //         analyser.getByteFrequencyData(dataArray);
+
+        //         // 查找最大非零频域数据的索引
+        //         var maxIndex = 0;
+        //         for (var i = 0; i < bufferLength; i++) {
+        //             if (dataArray[i] !== 0) {
+        //                 maxIndex = i;
+        //             }
+        //         }
+
+        //         // 计算采样并且施加平滑补充
+        //         var step = (maxIndex + 1) / maxSampleSize;
+        //         var sampledDataArray = [];
+        //         var prevIndex = -1;
+        //         for (var i = 0; i < maxSampleSize; i++) {
+        //             var index = Math.floor(i * step);
+        //             if (index === prevIndex) {
+        //                 var nextNonZeroIndex = prevIndex + 1;
+        //                 var middleValue = nextNonZeroIndex < bufferLength ? (dataArray[prevIndex] + dataArray[nextNonZeroIndex]) / 2 : dataArray[prevIndex];
+        //                 sampledDataArray.push(middleValue);
+        //             } else {
+        //                 sampledDataArray.push(dataArray[index]);
+        //                 prevIndex = index;
+        //             }
+        //         }
+
+        //         // 清除上一帧的画面
+        //         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+        //         // 设置绘制波形线条的样式
+        //         canvasCtx.lineWidth = 2;
+        //         canvasCtx.strokeStyle = 'black';
+
+        //         // 开始绘制路径
+        //         canvasCtx.beginPath();
+
+        //         // 画布中心的Y坐标
+        //         var centerY = canvas.height / 2;
+        //         // 根据采样数据数量调整sliceWidth
+        //         var sliceWidth = canvas.width / sampledDataArray.length;
+        //         var x = 0;
+
+        //         // 从画布中心开始绘制
+        //         canvasCtx.moveTo(x, centerY);
+
+        //         // 通过循环sampledDataArray来绘制波形线
+        //         for (var i = 0; i < sampledDataArray.length; i++) {
+        //             var v = sampledDataArray[i] / 128.0;
+        //             var y = v * centerY / 2;
+
+        //             // 绘制线条
+        //             canvasCtx.lineTo(x, centerY - y);
+        //             x += sliceWidth;
+        //             canvasCtx.lineTo(x, centerY + y);
+        //         }
+
+        //         // 完成路径
+        //         canvasCtx.lineTo(canvas.width, centerY);
+        //         canvasCtx.stroke();
+        //     }
+
+        //     drawVisualizer();
+        // }
+    </script>
+</body>
+
+</html>

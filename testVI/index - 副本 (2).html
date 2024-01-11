@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>频谱分析器</title>
+</head>
+
+<body>
+    <button id="playPauseButton">Play/Pause</button>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+    <input type="range" id="progressControl" min="0" max="100" step="0.1" value="0">
+    <audio id="audio" controls>
+        <source src="./Cloudier-Heartbeat.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <canvas id="canvas" width="800" height="256"></canvas>
+
+    <script>
+        var audioContext;
+        var analyser;
+        var audio = document.getElementById('audio');
+        var playPauseButton = document.getElementById('playPauseButton');
+        var volumeControl = document.getElementById('volumeControl');
+        var progressControl = document.getElementById('progressControl');
+        var canvas = document.getElementById('canvas');
+        var canvasCtx = canvas.getContext('2d');
+
+        // 初始设置
+        audio.volume = volumeControl.value;
+        playPauseButton.textContent = audio.paused ? 'Play' : 'Pause';
+
+        // 播放/暂停按钮事件
+        playPauseButton.addEventListener('click', function () {
+            if (audio.paused) {
+                audio.play();
+                startVisualizer();
+            } else {
+                audio.pause();
+            }
+            playPauseButton.textContent = audio.paused ? 'Play' : 'Pause';
+        });
+
+        // 音量控制事件
+        volumeControl.addEventListener('input', function () {
+            audio.volume = this.value;
+        });
+
+        // 进度控制事件
+        progressControl.addEventListener('input', function () {
+            var seekTime = audio.duration * (progressControl.value / 100);
+            audio.currentTime = seekTime;
+        });
+
+        // 音频播放事件，更新进度条
+        audio.addEventListener('timeupdate', function () {
+            var progress = (audio.currentTime / audio.duration) * 100;
+            progressControl.value = progress;
+        });
+
+        function startVisualizer() {
+            if (!audioContext) {
+                // 创建新的AudioContext实例
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                var source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                analyser.fftSize = 1024;
+                draw();
+            } else if (audioContext.state === 'suspended') {
+                // 仅在用户点击后恢复AudioContext
+                audioContext.resume().then(() => {
+                    console.log("AudioContext resumed!");
+                });
+            }
+        }
+
+        // 播放/暂停按钮事件
+        playPauseButton.addEventListener('click', function () {
+            // 确保在用户交互之后创建或恢复AudioContext
+            startVisualizer();
+
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+            playPauseButton.textContent = audio.paused ? 'Play' : 'Pause';
+        });
+
+
+        function draw() {
+            var bufferLength = analyser.frequencyBinCount;
+            var dataArray = new Uint8Array(bufferLength);
+            var maxSampleSize = 150; // 最大采样数据数
+
+            function drawVisualizer() {
+                requestAnimationFrame(drawVisualizer);
+
+                analyser.getByteFrequencyData(dataArray);
+
+                // 查找最大非零频域数据的索引
+                var maxIndex = 0;
+                for (var i = 0; i < bufferLength; i++) {
+                    if (dataArray[i] !== 0) {
+                        maxIndex = i;
+                    }
+                }
+
+
+                // 计算采样并且施加平滑补充
+                var step = (maxIndex + 1) / maxSampleSize;
+                var sampledDataArray = [];
+                var step = (maxIndex + 1) / maxSampleSize;
+                var sampledDataArray = [];
+                var prevIndex = -1;
+                for (var i = 0; i < maxSampleSize; i++) {
+                    var index = Math.floor(i * step);
+                    if (index === prevIndex) {
+                        var nextNonZeroIndex = prevIndex + 1;
+                        var middleValue = nextNonZeroIndex < bufferLength ? (dataArray[prevIndex] + dataArray[nextNonZeroIndex]) / 2 : dataArray[prevIndex];
+                        sampledDataArray.push(middleValue);
+                    } else {
+                        sampledDataArray.push(dataArray[index]);
+                        prevIndex = index;
+                    }
+                }
+
+
+
+                // 清除上一帧的画面
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 设置绘制波形线条的样式
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = 'black';
+
+                // 开始绘制路径
+                canvasCtx.beginPath();
+
+                // 画布中心的Y坐标
+                var centerY = canvas.height / 2;
+                // 根据采样数据数量调整sliceWidth
+                var sliceWidth = canvas.width / sampledDataArray.length;
+                var x = 0;
+
+                // 从画布中心开始绘制
+                canvasCtx.moveTo(x, centerY);
+
+                // 通过循环sampledDataArray来绘制波形线
+                for (var i = 0; i < sampledDataArray.length; i++) {
+                    var v = sampledDataArray[i] / 128.0;
+                    var y = v * centerY / 2;
+
+                    // 绘制线条
+                    canvasCtx.lineTo(x, centerY - y);
+                    x += sliceWidth;
+                    canvasCtx.lineTo(x, centerY + y);
+                }
+
+                // 完成路径
+                canvasCtx.lineTo(canvas.width, centerY);
+                canvasCtx.stroke();
+            }
+
+            drawVisualizer();
+        }
+
+    </script>
+</body>
+
+</html>

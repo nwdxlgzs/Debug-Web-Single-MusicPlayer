@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>频谱分析器</title>
+</head>
+
+<body>
+    <button id="startButton">Start Audio</button>
+    <audio id="audio" controls>
+        <source src="./Cloudier-Heartbeat.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <canvas id="canvas" width="800" height="256"></canvas>
+
+    <script>
+        var audioContext;
+        var analyser;
+
+        document.getElementById('startButton').addEventListener('click', function () {
+            // 用户点击之后创建或恢复AudioContext
+            if (!audioContext) {
+                // 创建新的AudioContext实例
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                var audio = document.getElementById('audio');
+                var canvas = document.getElementById('canvas');
+                var canvasCtx = canvas.getContext('2d');
+
+                analyser = audioContext.createAnalyser();
+
+                // 将analyser节点连接到AudioContext
+                var source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+
+                analyser.fftSize = 512;
+                draw();
+            } else if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            // 如果有必要的话，也可以在这里开始或恢复播放
+            audio.play();
+        });
+        function draw() {
+  var canvas = document.getElementById('canvas');
+  var canvasCtx = canvas.getContext('2d');
+  var bufferLength = analyser.frequencyBinCount;
+  var dataArray = new Uint8Array(bufferLength);
+
+  function drawVisualizer() {
+    requestAnimationFrame(drawVisualizer);
+
+    analyser.getByteFrequencyData(dataArray);
+
+    // 查找最大非零频域数据的索引
+    var maxIndex = bufferLength - 1;
+    for (var i = bufferLength - 1; i >= 0; i--) {
+      if (dataArray[i] !== 0) {
+        maxIndex = i;
+        break;
+      }
+    }
+
+    // 清除上一帧的画面
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 设置绘制波形线条的样式
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'black';
+
+    // 开始绘制路径
+    canvasCtx.beginPath();
+
+    // 画布中心的Y坐标
+    var centerY = canvas.height / 2;
+    // 根据最大索引调整sliceWidth，确保波形填充整个画布
+    var sliceWidth = canvas.width / (maxIndex + 1);
+    var x = 0;
+
+    // 从画布中心开始绘制
+    canvasCtx.moveTo(x, centerY);
+
+    // 通过循环dataArray来绘制波形线
+    for (var i = 0; i <= maxIndex; i++) {
+      var v = dataArray[i] / 128.0;
+      var y = v * centerY / 2;
+
+      // 绘制线条
+      canvasCtx.lineTo(x, centerY - y);
+      x += sliceWidth;
+      canvasCtx.lineTo(x, centerY + y);
+    }
+
+    // 完成路径
+    canvasCtx.lineTo(canvas.width, centerY);
+    canvasCtx.stroke();
+  }
+
+  drawVisualizer();
+}
+
+
+    </script>
+</body>
+
+</html>

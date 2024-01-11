@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="blur-background" style="background: url('./background.png') no-repeat center center;background-size: cover;"></div>
+
+    <div class="player-container">
+        <!-- 左侧容器 -->
+        <div class="left-container">
+            <!-- Canvas和封面 -->
+            <div class="spectrum-cover-container">
+                <canvas id="spectrum-canvas" class="spectrum-canvas"></canvas>
+                <div class="cover-container">
+                    <img id="cover-image" class="cover-image" src="./cover.jpg" alt="Song Cover">
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧容器 -->
+        <div class="right-container">
+            <!-- 歌曲信息 -->
+            <div class="song-info">
+                <h1 id="song-title" class="song-title">Song Title</h1>
+                <h2 id="artist-name" class="artist-name">Artist Name</h2>
+            </div>
+
+            <!-- 播放控件 -->
+            <div class="controls-container">
+                <button id="playPause" class="play-pause-btn"></button>
+                <div class="time-progress-container">
+                    <div id="time-container" class="time-container">
+                        <span id="time-elapsed" class="time-elapsed">00:00</span>
+                        <span id="total-duration" class="total-duration">00:00</span>
+                      </div>
+                      
+                    <input type="range" id="song-progress" class="song-progress" min="0" max="100" value="0">
+                </div>
+                <div class="volume-container">
+                    <button id="volume-btn" class="volume-btn"></button>
+                    <input type="range" id="volume-control" class="volume-control" min="0" max="100" value="100"
+                        orient="vertical">
+                </div>
+            </div>
+
+            <!-- 底部频谱 -->
+            <canvas id="bottom-spectrum-canvas" class="bottom-spectrum-canvas"></canvas>
+        </div>
+
+        <!-- 歌词 -->
+        <div class="lyrics-container">
+            <p id="lyrics" class="lyrics">歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+
+</html>

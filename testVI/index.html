@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player</title>
+<style>
+  /* 在这里添加CSS样式 */
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100vh;
+    background: url('your-blur-background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    /* filter: blur(8px); */
+  }
+
+  .left-panel, .right-panel {
+    width: 50%;
+    padding: 20px;
+  }
+
+  #canvas {
+    width: 100%;
+    height: 300px; /* 可以根据你的实际需要调整 */
+    background-color: #333; /* 仅为了可视化，您可以移除这个背景色 */
+  }
+
+  .circular-image {
+    width: 100px;
+    height: 100px;
+    background: url('your-image.jpg') no-repeat center center;
+    background-size: cover;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .song-info {
+    text-align: center;
+  }
+
+  .player-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .time-info {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #lyrics {
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+
+  /* 更多样式可以根据具体需求添加 */
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="left-panel">
+    <canvas id="canvas"></canvas>
+    <div class="circular-image"></div> <!-- 圆形图片可以用其他方式实现 -->
+  </div>
+  <div class="right-panel">
+    <div class="song-info">
+      <h2>歌曲名</h2>
+      <h4>歌手名</h4>
+    </div>
+    <div class="player-controls">
+      <!-- 播放暂停按钮 -->
+      <button id="playPause">Play/Pause</button>
+    </div>
+    <div class="time-info">
+      <span id="remainingTime">00:00</span>
+      <span id="totalTime">03:30</span>
+    </div>
+    <input type="range" id="progressBar" value="0" max="100">
+    <input type="range" id="volumeBar" value="100" max="100">
+    <div id="currentTime">00:00</div>
+  </div>
+</div>
+<canvas id="bottomCanvas"></canvas>
+<div id="lyrics">歌词</div>
+
+<script>
+  // 在这里添加JavaScript代码
+  // 用于控制播放、暂停、更新进度条、音量控制等
+  
+  // 请注意，实际的音乐播放和频谱分析将需要使用Web Audio API，
+  // 而圆形图片和Canvas绘制则需要使用Canvas API。
+</script>
+</body>
+</html>
