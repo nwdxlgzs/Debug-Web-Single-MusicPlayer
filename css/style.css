@@ -135,20 +135,14 @@ html {
 
 .volume-control {
     display: none;
-    /* Initially hidden */
     position: absolute;
     bottom: 40px;
-    /* 根据音量按钮的尺寸适当调整 */
     left: 50%;
     transform: translateX(-50%);
     height: 10vh;
-    /* or any desired size */
     width: 32px;
-    /* 应与按钮宽度一致 */
-    -webkit-appearance: slider-vertical;
-    /* 确保在 Webkit 浏览器上垂直显示 */
     writing-mode: bt-lr;
-    /* IE specific style for vertical range input */
+    writing-mode: vertical-lr;
 }
 
 
