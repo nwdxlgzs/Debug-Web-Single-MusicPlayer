@@ -1,3 +1,4 @@
+import { SHARE_SINGLE_DOWNLOAD_URL } from '../attach.js';
 /**
  * 音乐播放类
  */
@@ -55,7 +56,7 @@ class AudioPlayer {
         async function sourceOpen() {
             try {
                 // 获取音乐文件的响应流
-                const response = await fetch('./resources/sound');
+                const response = await fetch(SHARE_SINGLE_DOWNLOAD_URL);
 
                 const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg'); // 音频格式需要与文件类型匹配
 

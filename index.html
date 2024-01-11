@@ -9,8 +9,7 @@
 </head>
 
 <body>
-    <div class="blur-background"
-        style="background: url('./images/background.png') no-repeat center center;background-size: cover;"></div>
+    <div id="blur-background" class="blur-background"></div>
 
     <div class="player-container">
         <!-- 左侧容器 -->
@@ -19,7 +18,7 @@
             <div class="spectrum-cover-container">
                 <canvas id="spectrum-canvas" class="spectrum-canvas" width="1000" height="500"></canvas>
                 <div class="cover-container">
-                    <img id="cover-image" class="cover-image" src="./images/cover.jpg" alt="Song Cover">
+                    <img id="cover-image" class="cover-image" alt="Song Cover">
                 </div>
             </div>
         </div>
@@ -28,8 +27,8 @@
         <div class="right-container">
             <!-- 歌曲信息 -->
             <div class="song-info">
-                <h1 id="song-title" class="song-title">Song Title</h1>
-                <h2 id="artist-name" class="artist-name">Artist Name</h2>
+                <h1 id="song-title" class="song-title">Song: Unknown</h1>
+                <h2 id="artist-name" class="artist-name">Artist: Unknown</h2>
             </div>
 
             <!-- 播放控件 -->
@@ -60,7 +59,8 @@
         </div>
     </div>
 
-    <script  type="module" src="js/main.js"></script>
+    <script type="module" src="./js/main.js"></script>
+    <!-- <script src="./attach.js"></script> -->
 </body>
 
 
