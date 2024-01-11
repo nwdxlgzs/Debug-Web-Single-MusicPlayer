@@ -9,14 +9,15 @@
 </head>
 
 <body>
-    <div class="blur-background" style="background: url('./background.png') no-repeat center center;background-size: cover;"></div>
+    <div class="blur-background"
+        style="background: url('./background.png') no-repeat center center;background-size: cover;"></div>
 
     <div class="player-container">
         <!-- 左侧容器 -->
         <div class="left-container">
             <!-- Canvas和封面 -->
             <div class="spectrum-cover-container">
-                <canvas id="spectrum-canvas" class="spectrum-canvas"></canvas>
+                <canvas id="spectrum-canvas" class="spectrum-canvas" width="1000" height="500"></canvas>
                 <div class="cover-container">
                     <img id="cover-image" class="cover-image" src="./cover.jpg" alt="Song Cover">
                 </div>
@@ -38,8 +39,8 @@
                     <div id="time-container" class="time-container">
                         <span id="time-elapsed" class="time-elapsed">00:00</span>
                         <span id="total-duration" class="total-duration">00:00</span>
-                      </div>
-                      
+                    </div>
+
                     <input type="range" id="song-progress" class="song-progress" min="0" max="100" value="0">
                 </div>
                 <div class="volume-container">

@@ -77,9 +77,11 @@ function draw() {
     var HEIGHT = spectrumCanvas.height;
     var centerX = WIDTH / 2;
     var centerY = HEIGHT / 2;
-    var maxRadius = Math.min(WIDTH, HEIGHT) / 2; // 设置最大半径为画布宽高中较小的一半
-    var maxSampleSize = 360; // 设置采样点数量为360，对应于360度
+    var maxRadius = Math.min(WIDTH, HEIGHT) / 3.5;
+    var maxSampleSize = 360;
     var canvasCtx = spectrumCanvas.getContext('2d');
+    canvasCtx.imageSmoothingEnabled = true;
+
     function drawVisualizer() {
         requestAnimationFrame(drawVisualizer);
 
@@ -92,6 +94,7 @@ function draw() {
                 maxIndex = i;
             }
         }
+        maxIndex = bufferLength;
 
         // 计算采样并且施加平滑补充
         var step = (maxIndex + 1) / maxSampleSize;
@@ -120,14 +123,14 @@ function draw() {
                     smoothedData[i] = (tempArray[prevIndex] + tempArray[i] + tempArray[nextIndex]) / 3;
                 }
             }
-            smoothedData = smoothedData.map(val => val - 80);
+            smoothedData = smoothedData.map(val => val + 20);
             return smoothedData;
         }
 
 
 
         // 在drawVisualizer函数中，在绘制前对sampledDataArray应用平滑函数
-        sampledDataArray = smoothData(sampledDataArray, maxSampleSize, maxSampleSize / 1);
+        sampledDataArray = smoothData(sampledDataArray, maxSampleSize, maxSampleSize / 4);
 
 
         canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
