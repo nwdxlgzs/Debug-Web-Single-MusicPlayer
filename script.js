@@ -5,20 +5,26 @@ const timeElapsed = document.getElementById('time-elapsed');
 const totalDuration = document.getElementById('total-duration');
 const spectrumCanvas = document.getElementById('spectrum-canvas');
 const bottomSpectrumCanvas = document.getElementById('bottom-spectrum-canvas');
-
+const volumeBtn = document.getElementById('volume-btn');
+const volumeControl = document.getElementById('volume-control');
 // 创建Audio对象
-const audio = new Audio('./sound.mp3');
-audio.ontimeupdate = updateProgress;
+const audio = new Audio();
+audio.src = './sound.mp3'; // 您的音频文件路径
+
 audio.onloadedmetadata = function () {
     totalDuration.textContent = formatTime(audio.duration);
 };
 
-// 更新进度条
-function updateProgress() {
-    const percentage = (audio.currentTime / audio.duration) * 100;
-    songProgress.value = percentage;
+audio.addEventListener('timeupdate', function () {
+    var progress = (audio.currentTime / audio.duration) * 100;
+    songProgress.value = progress;
     timeElapsed.textContent = formatTime(audio.currentTime);
-}
+});
+audio.addEventListener('ended', function () {
+    songProgress.value = 0;
+    playPauseButton.style.backgroundImage = "url('./play_icon.svg')";
+});
+
 
 // 格式化时间
 function formatTime(time) {
@@ -39,11 +45,8 @@ playPauseButton.addEventListener('click', function () {
     }
 });
 
-// 进度条控制
-songProgress.addEventListener('input', function () {
-    const time = (songProgress.value * audio.duration) / 100;
-    audio.currentTime = time;
-});
+
+
 
 // 此函数用来模拟一个简单的频谱效果，实际项目中可以使用Web Audio API进行更精确的频率分析
 function drawSpectrumMock() {
@@ -78,9 +81,12 @@ function drawSpectrumMock() {
 drawSpectrumMock();
 
 
-var volumeBtn = document.getElementById('volume-btn');
-var volumeControl = document.getElementById('volume-control');
 
+// 进度控制事件
+songProgress.addEventListener('input', function () {
+    var seekTime = audio.duration * (this.value / 100);
+    audio.currentTime = seekTime;
+});
 // 音量按钮点击事件处理函数
 volumeBtn.addEventListener('click', function () {
     // 切换音量滑动条的显示和隐藏
