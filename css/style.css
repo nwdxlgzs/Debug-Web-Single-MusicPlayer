@@ -76,9 +76,8 @@ html {
 }
 
 
-
 .play-pause-btn {
-    background-image: url('./play_icon.svg');
+    background-image: url('../images/play_icon.svg');
     background-size: cover;
     background-color: transparent;
     border: none;
@@ -124,7 +123,7 @@ html {
 }
 
 .volume-btn {
-    background-image: url('./volume_icon.svg');
+    background-image: url('../images/volume_icon.svg');
     background-size: cover;
     background-color: transparent;
     width: 32px;

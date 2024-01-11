@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
     <div class="blur-background"
-        style="background: url('./background.png') no-repeat center center;background-size: cover;"></div>
+        style="background: url('./images/background.png') no-repeat center center;background-size: cover;"></div>
 
     <div class="player-container">
         <!-- 左侧容器 -->
@@ -19,7 +19,7 @@
             <div class="spectrum-cover-container">
                 <canvas id="spectrum-canvas" class="spectrum-canvas" width="1000" height="500"></canvas>
                 <div class="cover-container">
-                    <img id="cover-image" class="cover-image" src="./cover.jpg" alt="Song Cover">
+                    <img id="cover-image" class="cover-image" src="./images/cover.jpg" alt="Song Cover">
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script  type="module" src="js/main.js"></script>
 </body>
 
 
