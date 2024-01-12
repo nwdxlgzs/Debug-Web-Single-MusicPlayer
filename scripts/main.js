@@ -81,7 +81,6 @@ ui.listenPlayButtonClick(async () => {
         initAudioPlayer();
     }
 
-
     if (player.paused) {
         player.play();
         startVisualizer();
@@ -101,5 +100,3 @@ ui.listenProgressChange((progress) => {
 ui.listenVolumeChange((volume) => {
     player.volume = volume / 100;
 });
-
-initAudioPlayer();
