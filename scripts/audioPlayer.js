@@ -136,6 +136,6 @@ class AudioPlayer {
     }
 }
 
-export const AUDIO_FFTSIZE = 2048;
+export const AUDIO_FFTSIZE = 1024;
 
 export default AudioPlayer;

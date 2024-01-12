@@ -11,72 +11,7 @@ export function formatTime(time) {
     return `${minutes}:${formattedSeconds}`;
 }
 
-/**
- * 在一组数中，寻找前 k 个最大的窗口， a 为窗口大小排列
- * 
- * [1,2,4,5,6] -> (k:2,a:2) -> [2,4] [5,6]
- * 
- * @param {number[]} nums
- * @param {number} k top k
- * @param {number} a size
- * @returns
- */
-export function findMaxSubarrays(nums, k, a) {
-    // 定义一个新数组，用于存储每个长度为 a 的子数组的和
-    let sums = [];
-    // 定义一个变量，用于记录当前子数组的和
-    let sum = 0;
-    // 遍历数组，计算每个长度为 a 的子数组的和
-    for (let i = 0; i < nums.length; i++) {
-        // 将当前元素加入子数组的和
-        sum += nums[i];
-        // 如果子数组的长度达到 a，将和存入新数组，并从和中减去最左边的元素，以便滑动窗口
-        if (i >= a - 1) {
-            sums.push(sum);
-            sum -= nums[i - a + 1];
-        }
-    }
-    // 定义一个结果数组，用于存储前 k 个最大的子数组
-    let result = [];
-    // 定义一个集合，用于存储已经选择的下标，避免重复
-    let set = new Set();
-    // 循环 k 次，寻找前 k 个最大的元素
-    for (let i = 0; i < k; i++) {
-        // 定义一个变量，用于记录当前最大的元素
-        let max = -Infinity;
-        // 定义一个变量，用于记录当前最大元素的下标
-        let index = -1;
-        // 遍历新数组，寻找最大的元素和下标
-        for (let j = 0; j < sums.length; j++) {
-            // 如果当前元素大于最大元素，并且下标没有被选择过，更新最大元素和下标
-            if (sums[j] > max && !set.has(j)) {
-                // 定义一个标志，用于判断当前子数组是否和已经选择的子数组有重叠
-                let overlap = false;
-                // 遍历集合，检查是否有重叠的下标
-                for (let k of set) {
-                    // 如果当前下标和集合中的下标的差值的绝对值小于 a，说明有重叠
-                    if (Math.abs(j - k) < a) {
-                        overlap = true;
-                        break;
-                    }
-                }
-                // 如果没有重叠，更新最大元素和下标
-                if (!overlap) {
-                    max = sums[j];
-                    index = j;
-                }
-            }
-        }
-        // 将最大元素的下标加入集合，表示已经选择
-        set.add(index);
-        // 根据下标在原数组中取出相应的子数组，存入结果数组
-        for (let j = 0; j < a; j++) {
-            result.push(nums[index + j]);
-        }
-    }
-    // 返回结果数组
-    return result;
-}
+
 
 /**
  *
@@ -111,3 +46,61 @@ export function byteArrayToArrayBuffer(byteArray) {
 export function hexStringToArrayBuffer(hexString) {
     return byteArrayToArrayBuffer(hexStringToByteArray(hexString));
 }
+
+
+export function create2DSmoothedArray(data2D, windowSize) {
+    const rows = data2D.length;
+    const cols = data2D[0].length;
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            let sum = 0;
+            let count = 0;
+            for (let di = -Math.floor(windowSize / 2); di <= Math.floor(windowSize / 2); di++) {
+                for (let dj = -Math.floor(windowSize / 2); dj <= Math.floor(windowSize / 2); dj++) {
+                    // 计算环形索引
+                    let rowIndex = (i + di + rows) % rows;
+                    let colIndex = (j + dj + cols) % cols;
+
+                    // 累加邻近值
+                    sum += data2D[rowIndex][colIndex];
+                    count++;
+                }
+            }
+            // 计算平均值并赋值给平滑数组
+            data2D[i][j] = Math.round(sum / count);
+        }
+    }
+}
+
+export function sliceUint8ArrayVertically(dataArray, numSlices) {
+    if (dataArray.length === 0 || numSlices <= 0) {
+        throw new Error('Invalid input: dataArray cannot be empty and numSlices must be positive');
+    }
+
+    const rows = dataArray.length; // 数组中Uint8Array的个数
+    const cols = dataArray[0].length; // 每个Uint8Array的长度
+    const sliceSize = Math.floor(cols / numSlices); // 每个切片的大小，向上取整
+    const slicedArrays = [];
+
+    for (let slice = 0; slice < numSlices; slice++) {
+        const startCol = slice * sliceSize;
+        const endCol = Math.min(startCol + sliceSize, cols);
+
+        // 创建新的Uint8Array来存放切片数据
+        const newSlice = new Array(rows).fill(null).map(() => new Uint8Array(endCol - startCol));
+
+        // 遍历每个Uint8Array，拷贝数据到切片
+        for (let row = 0; row < rows; row++) {
+            for (let col = startCol, newCol = 0; col < endCol; col++, newCol++) {
+                newSlice[row][newCol] = dataArray[row][col];
+            }
+        }
+
+        // 将切片添加到结果数组
+        slicedArrays.push(newSlice);
+    }
+
+    return slicedArrays;
+}
+
+
