@@ -1,4 +1,3 @@
-import { SHARE_SINGLE_DOWNLOAD_URL } from '../attach.js';
 /**
  * 音乐播放类
  */

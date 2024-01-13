@@ -5,6 +5,8 @@ import * as ui from './ui.js';
 
 // 定义全局变量
 const spectrumCanvas = document.getElementById('spectrum-canvas');
+const coverImage = document.getElementById('cover-image');
+const coverImageContainer = document.getElementById('cover-container');
 
 const player = new AudioPlayer();
 
@@ -33,7 +35,7 @@ async function initAudioPlayer() {
 function startVisualizer() {
     const audioContext = player.audioContext;
 
-    draw(player.analyser, spectrumCanvas);
+    draw(player.analyser, spectrumCanvas, coverImage, coverImageContainer);
 
     if (audioContext.state === 'suspended') {
         // 仅在用户点击后恢复AudioContext

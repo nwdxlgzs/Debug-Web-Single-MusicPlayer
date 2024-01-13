@@ -11,4 +11,4 @@ document.getElementById('blur-background').style.cssText = `
 document.getElementById('cover-image').src = "./images/cover.jpg";
 document.getElementById('song-title').textContent = "Song: ABC";
 document.getElementById('artist-name').textContent = "Artist: 123";
-export const SHARE_SINGLE_DOWNLOAD_URL = './resources/sound';
+var SHARE_SINGLE_DOWNLOAD_URL = './resources/sound';

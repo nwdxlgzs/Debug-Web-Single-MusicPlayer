@@ -96,3 +96,10 @@ document.addEventListener('click', function (event) {
         volumeControl.style.display = 'none';
     }
 });
+
+// 空格键控制播放暂停
+document.addEventListener('keydown', function (event) {
+    if (event.code === 'Space') {
+        playPauseButton.click();
+    }
+});
