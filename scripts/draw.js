@@ -1,5 +1,5 @@
 import { AUDIO_FFTSIZE } from './audioPlayer.js';
-import { create2DSmoothedArray, sliceUint8ArrayVertically } from './utils.js';
+import { create2DSmoothedArray, sliceUint8ArrayVertically, MyIntQueue } from './utils.js';
 import { quantize } from './quantize.js';
 class SpectrumCanvasBubble {
     constructor(ctx, x, y) {
@@ -54,8 +54,10 @@ class SpectrumCanvasBubble {
  * @param {AnalyserNode} analyser
  * @param {HTMLCanvasElement} spectrumCanvas
  * @param {HTMLImageElement} coverImage
+ * @param {HTMLDivElement} coverImageContainer
+ * @param {HTMLCanvasElement} bottomSpectrumCanvas
  */
-export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer) {
+export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, bottomSpectrumCanvas) {
     const SpectrumCanvasBubbles = [];
     var MainColorForCover = [255, 255, 255];
     {
@@ -75,13 +77,13 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer) 
             g = pixels[offset + 1];
             b = pixels[offset + 2];
             a = pixels[offset + 3];
-
-            // 如果像素点透明则不取值
             if (typeof a === 'undefined' || a >= 125) {
                 pixelArray.push([r, g, b]);
             }
         }
-        MainColorForCover = quantize(pixelArray, 2).palette()[0];
+        try {
+            MainColorForCover = quantize(pixelArray, 2).palette()[0];
+        } catch (e) { }
     }
     const bufferLength = analyser.frequencyBinCount;
     let spectrum_Seq = []
@@ -95,16 +97,22 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer) 
         }
         spectrum_Seq[0] = lastArray;
     }
+    let history_Seq_averages = new MyIntQueue(256, 0);
     const spectrumCanvas_COLORS = ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'];
     const spectrumCanvas_SampleSize = Math.floor(bufferLength / spectrumCanvas_COLORS.length);
     const spectrumCanvas_canvasCtx = spectrumCanvas.getContext('2d');
     spectrumCanvas_canvasCtx.imageSmoothingEnabled = true;
+    const bottomSpectrumCanvas_canvasCtx = bottomSpectrumCanvas.getContext('2d');
+    bottomSpectrumCanvas_canvasCtx.imageSmoothingEnabled = true;
     const MAX_FPS = 50;
     let lastTime = 0;
     const FPSDrawlogic = (time) => {
         requestAnimationFrame(FPSDrawlogic);
         NEXT_spectrum_Seq();
         analyser.getByteFrequencyData(spectrum_Seq[0]);
+        history_Seq_averages.push(spectrum_Seq[0].reduce((accumulator, currentValue) => {
+            return accumulator + currentValue;
+        }) / spectrum_Seq[0].length);
         if (time - lastTime < 1000 / MAX_FPS) {
             return;
         }
@@ -112,16 +120,14 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer) 
         lastTime = time;
     };
     function drawVisualizer() {
-        const WIDTH = spectrumCanvas.width;
-        const HEIGHT = spectrumCanvas.height;
-        const centerX = WIDTH / 2;
-        const centerY = HEIGHT / 2;
-        const average = spectrum_Seq[0].reduce((accumulator, currentValue) => {
-            return accumulator + currentValue;
-        }) / spectrum_Seq[0].length;
+        const average = history_Seq_averages.gettopobj();
         let sum_smoothaverage = 0;
         //spectrumCanvas的绘制任务
         {
+            const WIDTH = spectrumCanvas.width;
+            const HEIGHT = spectrumCanvas.height;
+            const centerX = WIDTH / 2;
+            const centerY = HEIGHT / 2;
             // 清除上一帧的画面
             spectrumCanvas_canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
             const canvasCtx = spectrumCanvas_canvasCtx;
@@ -224,13 +230,49 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer) 
         }
         //coverImage旋转和缩放任务
         {
-            let sampledDataArray = spectrum_Seq[0];
+            const sampledDataArray = spectrum_Seq[0];
             const average = sum_smoothaverage / sampledDataArray.length;
             const scale = 1 + (average / 600);
             // coverImage.style.transform = `rotate(${(lastTime / 30000 * 360) % 360}deg)`;
             coverImage.style.transform = `scale(${scale}) rotate(${(lastTime / 30000 * 360) % 360}deg)`;
             coverImageContainer.style.height = `${scale * 35}vh`;
             coverImageContainer.style.width = `${scale * 35}vh`;
+        }
+        {//bottomSpectrumCanvas的绘制任务
+            const WIDTH = bottomSpectrumCanvas.width;
+            const HEIGHT = bottomSpectrumCanvas.height;
+            const centerX = WIDTH / 2;
+            const centerY = HEIGHT / 2;
+            const canvasCtx = bottomSpectrumCanvas_canvasCtx;
+            const maxSampleSize = history_Seq_averages.length;
+            const dataArray = spectrum_Seq[0];
+            // 清除上一帧的画面
+            bottomSpectrumCanvas_canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+            // 设置绘制波形线条的样式
+            canvasCtx.lineWidth = 1;
+            canvasCtx.strokeStyle = 'black';
+            // 开始绘制路径
+            canvasCtx.beginPath();
+            // 根据采样数据数量调整sliceWidth
+            var sliceWidth = WIDTH / maxSampleSize;
+            var x = 0;
+            const SqeSampSize = bufferLength / maxSampleSize;
+            canvasCtx.moveTo(x, centerY + (history_Seq_averages.get(i,10) / 128.0) * centerY / 2 +spectrum_Seq[0][0]/5);
+            // canvasCtx.moveTo(x, centerY);
+            // x += sliceWidth * 10;
+            // canvasCtx.lineTo(x, centerY);
+            // 通过循环sampledDataArray来绘制波形线
+            for (var i = 1; i < maxSampleSize; i++) {
+                var v = history_Seq_averages.get(i,10) / 128.0;
+                var y = v * centerY / 2 + spectrum_Seq[0][Math.floor(i*SqeSampSize)]/5;
+                // 绘制线条
+                canvasCtx.lineTo(x, centerY - y);
+                x += sliceWidth;
+                // canvasCtx.lineTo(x, centerY + y);
+            }
+            // 完成路径
+            // canvasCtx.lineTo(WIDTH, centerY);
+            canvasCtx.stroke();
         }
 
     }

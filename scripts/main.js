@@ -7,6 +7,8 @@ import * as ui from './ui.js';
 const spectrumCanvas = document.getElementById('spectrum-canvas');
 const coverImage = document.getElementById('cover-image');
 const coverImageContainer = document.getElementById('cover-container');
+const bottomSpectrumCanvas = document.getElementById('bottom-spectrum-canvas');
+
 
 const player = new AudioPlayer();
 
@@ -35,7 +37,7 @@ async function initAudioPlayer() {
 function startVisualizer() {
     const audioContext = player.audioContext;
 
-    draw(player.analyser, spectrumCanvas, coverImage, coverImageContainer);
+    draw(player.analyser, spectrumCanvas, coverImage, coverImageContainer, bottomSpectrumCanvas);
 
     if (audioContext.state === 'suspended') {
         // 仅在用户点击后恢复AudioContext
