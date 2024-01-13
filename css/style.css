@@ -48,7 +48,7 @@ html {
 
 .spectrum-canvas {
     width: 100vh;
-    height: 50vh;
+    height: 70vh;
 }
 
 
@@ -59,8 +59,8 @@ html {
 
 .cover-container {
     position: absolute;
-    width: 25vh;
-    height: 25vh;
+    width: 35vh;
+    height: 35vh;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -173,6 +173,7 @@ html {
     justify-content: center;
     flex-basis: 50%;
     height: 80vh;
+    z-index: 1;
 }
 
 /* 音乐播放器右侧容器 */
@@ -182,6 +183,7 @@ html {
     justify-content: space-around;
     flex-basis: 50%;
     height: 80vh;
+    z-index: 2;
 }
 
 /* Canvas和封面的容器 */
