@@ -33,55 +33,17 @@ class AudioPlayer {
      *
      * @param {string | null} src
      */
-    create(src = null) {
-        this.mediaSource = new MediaSource();
+    create(src = null, mediaType) {
         this.audio = new Audio();
-        this.audio.src = src ?? URL.createObjectURL(this.mediaSource);
+        this.audio.src = src
+        this.audioContext = new AudioContext();
+        this.mediaSource = this.audioContext.createMediaElementSource(this.audio)
 
         this.audio.addEventListener('durationchange', () => {
             if (this.audio.duration !== Infinity) {
                 this.audio.onloadedmetadata();
             }
         });
-
-        this.#loadMusic();
-    }
-
-    #loadMusic() {
-        const mediaSource = this.mediaSource;
-
-        mediaSource.addEventListener('sourceopen', sourceOpen);
-
-        async function sourceOpen() {
-            try {
-                // 获取音乐文件的响应流
-                const { data: attachData } = await import('./attach.js')
-                const response = await fetch(attachData.musicURL);
-                
-                const sourceBuffer = mediaSource.addSourceBuffer(attachData.mediaType); // 音频格式需要与文件类型匹配
-                const reader = response.body.getReader();
-                const pump = async () => {
-                    const { done, value } = await reader.read();
-                    if (done) {
-                        mediaSource.endOfStream();
-
-                        // audio.play(); // 当音频数据加载完毕后播放
-                        return;
-                    }
-
-                    sourceBuffer.appendBuffer(value); // 将数据块添加到sourceBuffer
-
-                    await new Promise(
-                        (resolve) => (sourceBuffer.onupdateend = resolve)
-                    );
-                    pump();
-                };
-
-                pump();
-            } catch (e) {
-                console.error('Error fetching audio', e);
-            }
-        }
     }
 
     /**
@@ -130,14 +92,14 @@ class AudioPlayer {
         if (!this.init) {
             const AudioContext = window.AudioContext;
 
-            this.audioContext = new AudioContext();
+            // this.audioContext = new AudioContext();
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.minDecibels = -90;
             this.analyser.maxDecibels = -10;
             this.analyser.smoothingTimeConstant = 0.5;
             this.analyser.fftSize = AUDIO_FFTSIZE;
-            const sourceNode = this.audioContext.createMediaElementSource(this.audio);
-            sourceNode.connect(this.analyser);
+            // const sourceNode = this.audioContext.createMediaElementSource(this.audio);
+            this.mediaSource.connect(this.analyser);
 
             this.analyser.connect(this.audioContext.destination);
             this.init = true;

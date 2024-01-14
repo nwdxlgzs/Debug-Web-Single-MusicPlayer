@@ -13,8 +13,9 @@ const bottomSpectrumCanvas = document.getElementById('bottom-spectrum-canvas');
 const player = new AudioPlayer();
 
 async function initAudioPlayer() {
+    const { data: attachData } = await import('./attach.js');
     // create player
-    player.create();
+    player.create(attachData.musicURL, attachData.mediaType);
 
     const audio = player.audio;
 
@@ -51,7 +52,7 @@ function startVisualizer() {
 // 播放暂停按钮功能
 ui.listenPlayButtonClick(async () => {
     if (!player.init) {
-        initAudioPlayer();
+        await initAudioPlayer();
     }
 
     if (player.paused) {

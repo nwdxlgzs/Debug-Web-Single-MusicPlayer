@@ -17,7 +17,7 @@ var lastLyricIndex = -1;
 export async function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
-        const { lyricsArray } = await import('./attach.js')
+        const { lyricsArray } = await import('./attach.js');
         if (lyricsArray !== undefined) {
             timeElapsed.textContent = formatTime(currentTime);
             let currentLyricIndex = 0;
@@ -94,6 +94,115 @@ export function listenVolumeChange(func) {
     });
 }
 
+/**
+ * 
+ * @param {import('./attach.js').AttachConfig} data 
+ */
+function changeSongTitle(data) {
+    document.getElementById('song-title').textContent = `${data.songTitle}`;
+    if (typeof data.animationSTAN !== 'string' || data.animationSTAN === "" || data.animationSTAN !== "none") {
+        return
+    }
+    // 选择需要动画的元素
+    // #region 标题动画
+    let elements = document.querySelectorAll('.song-info span');
+    switch (data.animationSTAN) {
+        case "circle": {
+            // 指定动画运行速度的范围
+            let a = 2; // 最小持续时间（秒）
+            let b = 5; // 最大持续时间（秒）
+            elements.forEach(function (element) {
+                let newHTML = '';
+                // 拆分文本并为每个字符创建一个新的span
+                for (let character of element.textContent) {
+                    if (character.trim() !== '') {
+                        newHTML += `<span class="char-animation-target">${character}</span>`;
+                    } else {
+                        newHTML += character
+                    }
+                }
+                // 更新HTML
+                element.innerHTML = newHTML;
+            });
+            // 获取所有新创建的字符元素
+            let chars = document.querySelectorAll('.char-animation-target');
+            chars.forEach(function (char) {
+                if (char.textContent.trim() !== '') { // 忽略空白字符
+                    // 为每个字符指定随机动画持续时间
+                    var duration = Math.random() * (b - a) + a;
+                    char.style.animationDuration = `${duration}s`;
+                }
+            });
+            break
+        }
+        case "skew": {
+            elements.forEach(function (element) {
+                let newHTML = '';
+                for (let character of element.textContent) {
+                    if (character.trim() !== '') {
+                        newHTML += `<span class="char-animation-target skew-animation">${character}</span>`;
+                    } else {
+                        newHTML += character
+                    }
+                }
+                element.innerHTML = newHTML;
+            });
+            break
+        }
+        case "stretch": {
+            elements.forEach(function (element) {
+                var newHTML = '';
+                for (let character of element.textContent) {
+                    if (character.trim() !== '') {
+                        newHTML += `<span class="char-animation-target stretch-animation">${character}</span>`;
+                    } else {
+                        newHTML += character
+                    }
+                }
+                element.innerHTML = newHTML;
+            });
+            let chars = document.querySelectorAll('.char-animation-target');
+            chars.forEach(function (char) {
+                if (char.textContent.trim() !== '') {
+                    let duration = Math.random() * (10 - 4) + 4; // 10到4秒之间的随机持续时间
+                    char.style.animationDuration = `${duration}s`;
+                }
+            });
+            break
+        }
+    }
+    // #endregion 标题动画
+}
+
+/**
+ * 
+ * @param {string} lrcExistLike 
+ */
+function changeLyricsStyle(lrcExistLike) {
+    // <div class="lyrics-container-container">
+    const lyricsContainerContainer = document.querySelector('.lyrics-container-container');
+    switch (lrcExistLike) {
+        case "center": {
+            if (!lyricsContainerContainer.classList.contains('lyrics-container-container')) {
+                lyricsContainerContainer.classList.add('lyrics-container-container');
+            }
+            lyricsContainerContainer.style.display = undefined;
+            break
+        }
+        case "hide": {
+            lyricsContainerContainer.style.display = "none";
+            break
+        }
+        case "left": {
+            if (lyricsContainerContainer.classList.contains('lyrics-container-container')) {
+                lyricsContainerContainer.classList.remove('lyrics-container-container');
+            }
+            lyricsContainerContainer.style.display = undefined;
+            break
+        }
+    };
+}
+
 // 音量按钮点击事件处理函数
 volumeBtn.addEventListener('click', function () {
     // 切换音量滑动条的显示和隐藏
@@ -118,3 +227,25 @@ document.addEventListener('click', function (event) {
         volumeControl.style.display = 'none';
     }
 });
+
+
+import('./attach.js').then(({ data, ensureLyricsArray }) => {
+
+    // 进行DOM更新或其他操作
+    document.getElementById('blur-background').style.backgroundImage = `url('${data.backgroundImage}')`;
+    document.getElementById('cover-image').src = data.coverImage;
+    document.getElementById('artist-name').textContent = `${data.artistName}`;
+    changeSongTitle(data);
+
+    const lyricsParagraph = document.getElementById('lyrics')
+    if (data.lrcExistLike !== 'hide') {
+        // 都不显示歌词了还要歌词有什么用
+        ensureLyricsArray().then(() => {
+            lyricsParagraph.textContent = "点击播放即可使用lrc歌词数据";
+        })
+    }
+
+    if (typeof data.lrcExistLike === 'string' && data.lrcExistLike) {
+        changeLyricsStyle(data.lrcExistLike)
+    }
+})
