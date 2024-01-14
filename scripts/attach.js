@@ -19,9 +19,14 @@ async function fetchWithTimeout(url, timeout = 2000) {
 }
 
 const mid = (new URLSearchParams(window.location.hash.substring(1))).get('mid') || (new URLSearchParams(window.location.search)).get('mid') || '0';
-// const jsonURL = `${window.location.origin}/?api=playerInfoGet&mid=${mid}`;
-const jsonURL = `${window.location.origin}/attach.json#mid=${mid}`;
-// 用法示例
+let jsonURL = `${window.location.origin}/?api=playerInfoGet&mid=${mid}`;
+// 判断window.location.origin是不是XX.github.io，是就相对路径，不是就绝对路径
+if (window.location.origin.endsWith('.github.io')) {
+    jsonURL = `${window.location.href.split('/').slice(0, -1).join('/')}/attach.json#mid=${mid}`;
+} else {
+    jsonURL = `${window.location.origin}/attach.json#mid=${mid}`;
+}
+
 fetchWithTimeout(jsonURL)
     .then(response => {
         if (!response.ok) {
