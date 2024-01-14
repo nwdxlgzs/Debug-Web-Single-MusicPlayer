@@ -27,7 +27,7 @@ class AudioPlayer {
      */
     init = false;
 
-    constructor() {}
+    constructor() { }
 
     /**
      *
@@ -55,10 +55,10 @@ class AudioPlayer {
         async function sourceOpen() {
             try {
                 // 获取音乐文件的响应流
-                const response = await fetch(SHARE_SINGLE_DOWNLOAD_URL);
-
-                const sourceBuffer = mediaSource.addSourceBuffer(MEDIA_SOURCE_BUFFER_TYPE); // 音频格式需要与文件类型匹配
-
+                const { data: attachData } = await import('./attach.js')
+                const response = await fetch(attachData.musicURL);
+                
+                const sourceBuffer = mediaSource.addSourceBuffer(attachData.mediaType); // 音频格式需要与文件类型匹配
                 const reader = response.body.getReader();
                 const pump = async () => {
                     const { done, value } = await reader.read();
@@ -129,7 +129,7 @@ class AudioPlayer {
     play() {
         if (!this.init) {
             const AudioContext = window.AudioContext;
-            
+
             this.audioContext = new AudioContext();
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.minDecibels = -90;
@@ -138,7 +138,7 @@ class AudioPlayer {
             this.analyser.fftSize = AUDIO_FFTSIZE;
             const sourceNode = this.audioContext.createMediaElementSource(this.audio);
             sourceNode.connect(this.analyser);
-            
+
             this.analyser.connect(this.audioContext.destination);
             this.init = true;
         }

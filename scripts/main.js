@@ -113,3 +113,7 @@ function updateProgress(step) {
         player.currentTime = player.duration * (newProgress / 100);
     }
 }
+
+import('./attach.js').then((module) => {
+    module.ensureLyricsArray()
+})

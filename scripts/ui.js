@@ -14,26 +14,31 @@ const lyricsElement = document.getElementById('lyrics');
  * @param {number | null} currentTime 
  */
 var lastLyricIndex = -1;
-export function changeProgress(progress, currentTime) {
+export async function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
-        timeElapsed.textContent = formatTime(currentTime);
-        let currentLyricIndex = 0;
-        for (let i = 0; i < lyricsArray.length; i++) {
-            if (currentTime >= lyricsArray[i].time) {
-                currentLyricIndex = i;
+        const { lyricsArray } = await import('./attach.js')
+        if (lyricsArray !== undefined) {
+            timeElapsed.textContent = formatTime(currentTime);
+            let currentLyricIndex = 0;
+            for (let [i, lyric] of lyricsArray.entries()) {
+                if (currentTime >= lyric.time) {
+                    currentLyricIndex = i;
+                } else {
+                    break
+                }
             }
-        }
-        if (currentLyricIndex != lastLyricIndex) {
-            const text = lyricsArray[currentLyricIndex].text;
-            lyricsElement.classList.remove('lyrics-active');
-            // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
-            setTimeout(() => {
-                lyricsElement.textContent = text;
-                lyricsElement.classList.add('lyrics-active');
-                lastLyricIndex = currentLyricIndex;
-            }, 100);
-            return;
+            if (currentLyricIndex !== lastLyricIndex) {
+                const text = lyricsArray[currentLyricIndex].text;
+                lyricsElement.classList.remove('lyrics-active');
+                // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
+                setTimeout(() => {
+                    lyricsElement.textContent = text;
+                    lyricsElement.classList.add('lyrics-active');
+                    lastLyricIndex = currentLyricIndex;
+                }, 100);
+                return;
+            }
         }
     }
 }

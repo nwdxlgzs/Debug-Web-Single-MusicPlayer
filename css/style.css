@@ -14,10 +14,12 @@ html {
     right: 0;
     bottom: 0;
     z-index: -1;
-    background-size: cover;
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
+    /* -webkit-backdrop-filter: blur(20px); */
+    /* backdrop-filter: blur(20px); */
     filter: blur(20px);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .blur-background::before {
