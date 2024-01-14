@@ -3,9 +3,9 @@
  */
 class AudioPlayer {
     /**
-     * @type {MediaSource}
+     * @type {MediaElementAudioSourceNode}
      */
-    mediaSource; // 媒体资源
+    source; // 媒体资源
 
     /**
      * @type {HTMLAudioElement}
@@ -37,7 +37,7 @@ class AudioPlayer {
         this.audio = new Audio();
         this.audio.src = src
         this.audioContext = new AudioContext();
-        this.mediaSource = this.audioContext.createMediaElementSource(this.audio)
+        this.source = this.audioContext.createMediaElementSource(this.audio)
 
         this.audio.addEventListener('durationchange', () => {
             if (this.audio.duration !== Infinity) {
@@ -90,17 +90,12 @@ class AudioPlayer {
 
     play() {
         if (!this.init) {
-            const AudioContext = window.AudioContext;
-
-            // this.audioContext = new AudioContext();
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.minDecibels = -90;
             this.analyser.maxDecibels = -10;
             this.analyser.smoothingTimeConstant = 0.5;
             this.analyser.fftSize = AUDIO_FFTSIZE;
-            // const sourceNode = this.audioContext.createMediaElementSource(this.audio);
-            this.mediaSource.connect(this.analyser);
-
+            this.source.connect(this.analyser);
             this.analyser.connect(this.audioContext.destination);
             this.init = true;
         }
