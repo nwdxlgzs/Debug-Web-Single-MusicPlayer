@@ -4,10 +4,9 @@ const playPauseButton = document.getElementById('playPause');
 const songProgress = document.getElementById('song-progress');
 const timeElapsed = document.getElementById('time-elapsed');
 const totalDuration = document.getElementById('total-duration');
-const spectrumCanvas = document.getElementById('spectrum-canvas');
-const bottomSpectrumCanvas = document.getElementById('bottom-spectrum-canvas');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
+const lyricsElement = document.getElementById('lyrics');
 
 /**
  * 
@@ -18,6 +17,14 @@ export function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
         timeElapsed.textContent = formatTime(currentTime);
+        let currentLyricIndex=0;
+        for (let i = 0; i < lyricsArray.length; i++) {
+            if (currentTime >= lyricsArray[i].time) {
+                currentLyricIndex = i;
+            }
+        }
+        // 更新元素的文本
+        lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
     }
 }
 

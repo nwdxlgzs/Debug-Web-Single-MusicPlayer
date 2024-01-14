@@ -55,9 +55,10 @@ class SpectrumCanvasBubble {
  * @param {HTMLCanvasElement} spectrumCanvas
  * @param {HTMLImageElement} coverImage
  * @param {HTMLDivElement} coverImageContainer
+ * @param {HTMLCanvasElement} topSpectrumCanvas
  * @param {HTMLCanvasElement} bottomSpectrumCanvas
  */
-export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, bottomSpectrumCanvas) {
+export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, topSpectrumCanvas, bottomSpectrumCanvas) {
     const SpectrumCanvasBubbles = [];
     var MainColorForCover = [255, 255, 255];
     {
@@ -97,13 +98,16 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
         }
         spectrum_Seq[0] = lastArray;
     }
-    let history_Seq_averages = new MyIntQueue(128, 0);
+    let history_Seq_averages = new MyIntQueue(64, 0);
+    const timeDomainDataArray = new Uint8Array(bufferLength);
     const spectrumCanvas_COLORS = ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'];
     const spectrumCanvas_SampleSize = Math.floor(bufferLength / spectrumCanvas_COLORS.length);
     const spectrumCanvas_canvasCtx = spectrumCanvas.getContext('2d');
     spectrumCanvas_canvasCtx.imageSmoothingEnabled = true;
     const bottomSpectrumCanvas_canvasCtx = bottomSpectrumCanvas.getContext('2d');
     bottomSpectrumCanvas_canvasCtx.imageSmoothingEnabled = true;
+    const topSpectrumCanvas_canvasCtx = topSpectrumCanvas.getContext('2d');
+    topSpectrumCanvas_canvasCtx.imageSmoothingEnabled = true;
     const MAX_FPS = 50;
     let lastTime = 0;
     const FPSDrawlogic = (time) => {
@@ -116,6 +120,7 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
         if (time - lastTime < 1000 / MAX_FPS) {
             return;
         }
+        analyser.getByteTimeDomainData(timeDomainDataArray);
         drawVisualizer();
         lastTime = time;
     };
@@ -238,12 +243,46 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
             coverImageContainer.style.height = `${scale * 35}vh`;
             coverImageContainer.style.width = `${scale * 35}vh`;
         }
+        {//topSpectrumCanvas的绘制任务
+            const WIDTH = topSpectrumCanvas.width;
+            const HEIGHT = topSpectrumCanvas.height;
+            const canvasCtx = topSpectrumCanvas_canvasCtx;
+            const dataArray = spectrum_Seq[0];
+            // 清除上一帧的画面
+            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+            let x = 0;
+
+            // 循环通过dataArray来绘制圆点
+            for (let i = 0; i < bufferLength; i++) {
+                // 用dataArray中的值作为圆点的Y坐标
+                const y = HEIGHT - dataArray[i];
+
+                let radius = dataArray[i] / 255 * 5;
+                if (radius < 3) {
+                    radius = 3;
+                } else if (radius > 5) {
+                    radius = 5;
+                }
+
+                // 开始绘制路径
+                canvasCtx.beginPath();
+                // 画一个圆：arc(x, y, radius, startAngle, endAngle)
+                canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
+                // 设置圆点的颜色
+                canvasCtx.fillStyle = `rgba(255, 255, 255, ${(dataArray[i] + 10) / (255 + 10)})`;
+                // 填充圆点
+                canvasCtx.fill();
+                x += 2 * radius + 1;
+                if (x > WIDTH) {
+                    break;
+                }
+            }
+        }
         {//bottomSpectrumCanvas的绘制任务
             const WIDTH = bottomSpectrumCanvas.width;
             const HEIGHT = bottomSpectrumCanvas.height;
             const canvasCtx = bottomSpectrumCanvas_canvasCtx;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteTimeDomainData(dataArray);
+            const dataArray = timeDomainDataArray;
             // 清除上一帧的画面
             canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
@@ -264,7 +303,7 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
             let x = 0;
             for (let i = 0; i < bufferLength; i++) {
                 const v = dataArray[i] / 256.0;
-                const y = v * HEIGHT / 2+ HEIGHT / 2; // 让波形居中显示
+                const y = v * HEIGHT / 2 + HEIGHT / 2; // 让波形居中显示
                 if (i === 0) {
                     canvasCtx.moveTo(x, y);
                 } else {
@@ -275,32 +314,6 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
             // 画到canvas上
             canvasCtx.lineTo(WIDTH, HEIGHT / 2); // 确保线的最后部分也有渐变
             canvasCtx.stroke();
-
-            // const WIDTH = bottomSpectrumCanvas.width;
-            // const HEIGHT = bottomSpectrumCanvas.height;
-            // const canvasCtx = bottomSpectrumCanvas_canvasCtx;
-            // const dataArray = new Uint8Array(bufferLength);
-            // analyser.getByteTimeDomainData(dataArray);
-            // // 清除上一帧的画面
-            // canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-            // canvasCtx.lineWidth = 2;
-            // canvasCtx.strokeStyle = 'white';
-            // // 开始绘制路径
-            // canvasCtx.beginPath();
-            // const sliceWidth = WIDTH / bufferLength;
-            // canvasCtx.moveTo(0, centerY);
-            // let x = 0;
-            // for (let i = 0; i < bufferLength; i++) {
-            //     const v = dataArray[i] / 128.0;
-            //     const y = v * HEIGHT / 4;
-            //     if (i === 0) {
-            //         canvasCtx.moveTo(x, y);
-            //     } else {
-            //         canvasCtx.lineTo(x, y);
-            //     }
-            //     x += sliceWidth;
-            // }
-            // canvasCtx.stroke();
         }
     }
     FPSDrawlogic();

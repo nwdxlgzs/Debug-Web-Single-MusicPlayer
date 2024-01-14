@@ -3,5 +3,8 @@
     "coverImage": "./images/cover.jpg",
     "songTitle": "Heartbeat",
     "artistName": "Cloudier",
-    "musicURL": "./resources/sound"
+    "musicURL": "./resources/sound",
+    "mediaType": "audio/mpeg",
+    "lrcFile": "./resources/sound_lrc",
+    "animationSTAN": "skew"
 }

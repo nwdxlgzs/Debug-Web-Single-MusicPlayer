@@ -32,6 +32,8 @@
                 <span id="artist-name" class="artist-name">Artist: Unknown</span>
             </div>
 
+            <!-- 进度条顶部频谱 -->
+            <canvas id="top-spectrum-canvas" class="top-spectrum-canvas" width="1024" height="256"></canvas>
             <!-- 播放控件 -->
             <div class="controls-container">
                 <button id="playPause" class="play-pause-btn"></button>
@@ -49,17 +51,15 @@
                         orient="vertical">
                 </div>
             </div>
-            <div class="controls-container">
-                <!-- 底部频谱 -->
-                <canvas id="bottom-spectrum-canvas" class="bottom-spectrum-canvas" width="800"
-                    height="100"></canvas>
-            </div>
+            <!-- 进度条底部频谱 -->
+            <canvas id="bottom-spectrum-canvas" class="bottom-spectrum-canvas" width="800" height="100"></canvas>
+
 
         </div>
 
         <!-- 歌词 -->
         <div class="lyrics-container">
-            <p id="lyrics" class="lyrics">歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词歌词</p>
+            <p id="lyrics" class="lyrics">点击开始播放</p>
         </div>
     </div>
 

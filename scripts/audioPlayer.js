@@ -57,7 +57,7 @@ class AudioPlayer {
                 // 获取音乐文件的响应流
                 const response = await fetch(SHARE_SINGLE_DOWNLOAD_URL);
 
-                const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg'); // 音频格式需要与文件类型匹配
+                const sourceBuffer = mediaSource.addSourceBuffer(MEDIA_SOURCE_BUFFER_TYPE); // 音频格式需要与文件类型匹配
 
                 const reader = response.body.getReader();
                 const pump = async () => {

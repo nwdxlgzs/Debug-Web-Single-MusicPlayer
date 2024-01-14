@@ -16,7 +16,6 @@ html {
 
 .blur-background {
     position: fixed;
-    /* 固定位置 */
     top: 0;
     left: 0;
     right: 0;
@@ -51,6 +50,84 @@ html {
     height: 70vh;
 }
 
+
+.top-spectrum-canvas {
+    width: 40vw;
+    height: 10vw;
+}
+
+@keyframes rotate-A {
+    0% {
+        transform: rotate(0deg) translate(1px) rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg) translate(1px) rotate(-360deg);
+    }
+}
+
+
+/* 变长变矮动画关键帧 */
+@keyframes stretch-A {
+
+    0%,
+    100% {
+        transform: scaleY(1);
+    }
+
+    50% {
+        transform: scaleY(1.3);
+    }
+}
+
+/* 向左向右倾斜动画关键帧 */
+@keyframes skew-B {
+
+    0%,
+    100% {
+        transform: skewX(0deg);
+    }
+
+    25% {
+        transform: skewX(-20deg);
+        /* 向左倾斜 */
+    }
+
+    75% {
+        transform: skewX(20deg);
+        /* 向右倾斜 */
+    }
+}
+
+/* 向左向右倾斜动画关键帧 */
+@keyframes skew-A {
+
+    0% {
+        transform: skewX(-20deg);
+        /* 向左倾斜 */
+    }
+
+    100% {
+        transform: skewX(20deg);
+        /* 向右倾斜 */
+    }
+}
+
+.char-animation-target {
+    display: inline-block;
+    /* 初始动画设置，可以被JavaScript覆盖 */
+    animation: rotate-A 5s infinite linear;
+}
+
+.stretch-animation {
+    animation: stretch-A 2s infinite alternate ease-in-out;
+    /* 变长变矮动画 */
+}
+
+.skew-animation {
+    animation: skew-A 5s infinite alternate ease-in-out;
+    /* 向左向右倾斜动画 */
+}
 
 .bottom-spectrum-canvas {
     width: 40vw;
