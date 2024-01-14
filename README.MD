@@ -7,16 +7,15 @@ python -m http.server
 ```
 
 ## 更换播放器内容
-> 只需要修改`attach.js`内容即可，播放器本身是空壳，通过被动附着`attach.js`挂载的数据实现播放，后期可以通过`attach.js`请求`json`等实现其他更换功能，它不是interface，所以是attach。
+> 只需要修改`attach.json`内容即可，播放器本身是空壳，通过被动附着`attach.json`挂载的数据实现播放。
 ```js
-document.getElementById('blur-background').style.cssText = `
-  background: url('./images/background.png') no-repeat center center;
-  background-size: cover;
-`;
-document.getElementById('cover-image').src = "./images/cover.jpg";
-document.getElementById('song-title').textContent = "Song: ABC";
-document.getElementById('artist-name').textContent = "Artist: 123";
-var SHARE_SINGLE_DOWNLOAD_URL = './resources/sound';
+{
+    "backgroundImage": "./images/background.png",
+    "coverImage": "./images/cover.jpg",
+    "songTitle": "Heartbeat",
+    "artistName": "Cloudier",
+    "musicURL": "./resources/sound"
+}
 ```
 | 内容                    | 说明                                                   |
 | ----------------------- | ------------------------------------------------------ |

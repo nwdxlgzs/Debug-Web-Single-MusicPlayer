@@ -97,7 +97,7 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
         }
         spectrum_Seq[0] = lastArray;
     }
-    let history_Seq_averages = new MyIntQueue(256, 0);
+    let history_Seq_averages = new MyIntQueue(128, 0);
     const spectrumCanvas_COLORS = ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'];
     const spectrumCanvas_SampleSize = Math.floor(bufferLength / spectrumCanvas_COLORS.length);
     const spectrumCanvas_canvasCtx = spectrumCanvas.getContext('2d');
@@ -241,40 +241,67 @@ export function draw(analyser, spectrumCanvas, coverImage, coverImageContainer, 
         {//bottomSpectrumCanvas的绘制任务
             const WIDTH = bottomSpectrumCanvas.width;
             const HEIGHT = bottomSpectrumCanvas.height;
-            const centerX = WIDTH / 2;
-            const centerY = HEIGHT / 2;
             const canvasCtx = bottomSpectrumCanvas_canvasCtx;
-            const maxSampleSize = history_Seq_averages.length;
-            const dataArray = spectrum_Seq[0];
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
             // 清除上一帧的画面
-            bottomSpectrumCanvas_canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-            // 设置绘制波形线条的样式
-            canvasCtx.lineWidth = 1;
-            canvasCtx.strokeStyle = 'black';
+            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+
+            // 创建渐变
+            const gradient = canvasCtx.createLinearGradient(0, 0, WIDTH, 0);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            gradient.addColorStop(0.3, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.7, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+            canvasCtx.lineWidth = 2;
+            // 将渐变设置为stroke样式
+            canvasCtx.strokeStyle = gradient;
+
             // 开始绘制路径
             canvasCtx.beginPath();
-            // 根据采样数据数量调整sliceWidth
-            var sliceWidth = WIDTH / maxSampleSize;
-            var x = 0;
-            const SqeSampSize = bufferLength / maxSampleSize;
-            canvasCtx.moveTo(x, centerY + (history_Seq_averages.get(i,10) / 128.0) * centerY / 2 +spectrum_Seq[0][0]/5);
-            // canvasCtx.moveTo(x, centerY);
-            // x += sliceWidth * 10;
-            // canvasCtx.lineTo(x, centerY);
-            // 通过循环sampledDataArray来绘制波形线
-            for (var i = 1; i < maxSampleSize; i++) {
-                var v = history_Seq_averages.get(i,10) / 128.0;
-                var y = v * centerY / 2 + spectrum_Seq[0][Math.floor(i*SqeSampSize)]/5;
-                // 绘制线条
-                canvasCtx.lineTo(x, centerY - y);
+            const sliceWidth = WIDTH / bufferLength;
+            let x = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 256.0;
+                const y = v * HEIGHT / 2+ HEIGHT / 2; // 让波形居中显示
+                if (i === 0) {
+                    canvasCtx.moveTo(x, y);
+                } else {
+                    canvasCtx.lineTo(x, y);
+                }
                 x += sliceWidth;
-                // canvasCtx.lineTo(x, centerY + y);
             }
-            // 完成路径
-            // canvasCtx.lineTo(WIDTH, centerY);
+            // 画到canvas上
+            canvasCtx.lineTo(WIDTH, HEIGHT / 2); // 确保线的最后部分也有渐变
             canvasCtx.stroke();
-        }
 
+            // const WIDTH = bottomSpectrumCanvas.width;
+            // const HEIGHT = bottomSpectrumCanvas.height;
+            // const canvasCtx = bottomSpectrumCanvas_canvasCtx;
+            // const dataArray = new Uint8Array(bufferLength);
+            // analyser.getByteTimeDomainData(dataArray);
+            // // 清除上一帧的画面
+            // canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+            // canvasCtx.lineWidth = 2;
+            // canvasCtx.strokeStyle = 'white';
+            // // 开始绘制路径
+            // canvasCtx.beginPath();
+            // const sliceWidth = WIDTH / bufferLength;
+            // canvasCtx.moveTo(0, centerY);
+            // let x = 0;
+            // for (let i = 0; i < bufferLength; i++) {
+            //     const v = dataArray[i] / 128.0;
+            //     const y = v * HEIGHT / 4;
+            //     if (i === 0) {
+            //         canvasCtx.moveTo(x, y);
+            //     } else {
+            //         canvasCtx.lineTo(x, y);
+            //     }
+            //     x += sliceWidth;
+            // }
+            // canvasCtx.stroke();
+        }
     }
     FPSDrawlogic();
 

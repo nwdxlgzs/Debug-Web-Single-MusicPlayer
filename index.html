@@ -19,7 +19,7 @@
             <div class="spectrum-cover-container">
                 <canvas id="spectrum-canvas" class="spectrum-canvas" width="1000" height="700"></canvas>
                 <div id="cover-container" class="cover-container">
-                    <img id="cover-image" class="cover-image" alt=""/> 
+                    <img id="cover-image" class="cover-image" alt="" />
                 </div>
             </div>
         </div>
@@ -28,8 +28,8 @@
         <div class="right-container">
             <!-- 歌曲信息 -->
             <div class="song-info">
-                <h1 id="song-title" class="song-title">Song: Unknown</h1>
-                <h2 id="artist-name" class="artist-name">Artist: Unknown</h2>
+                <span id="song-title" class="song-title">Song: Unknown</span>
+                <span id="artist-name" class="artist-name">Artist: Unknown</span>
             </div>
 
             <!-- 播放控件 -->
@@ -49,9 +49,12 @@
                         orient="vertical">
                 </div>
             </div>
+            <div class="controls-container">
+                <!-- 底部频谱 -->
+                <canvas id="bottom-spectrum-canvas" class="bottom-spectrum-canvas" width="800"
+                    height="100"></canvas>
+            </div>
 
-            <!-- 底部频谱 -->
-            <canvas id="bottom-spectrum-canvas" class="bottom-spectrum-canvas" width="800" height="200"></canvas>
         </div>
 
         <!-- 歌词 -->
@@ -60,7 +63,7 @@
         </div>
     </div>
 
-    <script src="./attach.js"></script>
+    <script async src="./scripts/attach.js"></script>
     <script defer type="module" src="./scripts/main.js"></script>
 </body>
 

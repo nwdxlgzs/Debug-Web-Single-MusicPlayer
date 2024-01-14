@@ -124,34 +124,22 @@ export class MyIntQueue {
         }
         return this.buffer[index];
     }
-    smoothget(index, size) {
+    smoothget(index, smoothwindow) {
         if (index < 0 || index >= this.buffer.length) {
-            throw new Error('Index out of bounds');
+            throw new Error('Index out of bounds : length = ' + this.buffer.length + ' index = ' + index);
         }
-        if (size < 0) {
+        if (smoothwindow < 0) {
             throw new Error('Size must be a non-negative value');
         }
-
-        // Calculate the actual window size (may be less than 'size' near the edges)
-        const windowSize = Math.min(size, index, this.buffer.length - 1 - index) * 2 + 1;
-        const halfWindowSize = Math.floor(windowSize / 2);
-
-        let sum = 0;
-        let weightSum = 0;
-
-        for (let i = -halfWindowSize; i <= halfWindowSize; i++) {
-            // Calculate the distance from the center of the window
-            const distance = Math.abs(i);
-            // Calculate the weight (1 at the center, decreasing to 0 at the edges)
-            const weight = 1 - (distance / windowSize);
-            // Add the weighted value to the sum
-            sum += this.buffer[index + i] * weight;
-            // Keep track of the total weight applied
-            weightSum += weight;
+        if ((smoothwindow === 0) || (index >= smoothwindow && index < this.buffer.length - smoothwindow)) {
+            return this.buffer[index];
         }
-
-        // Return the weighted average
-        return sum / weightSum;
+        if (index < smoothwindow) {
+            return this.buffer[index] * (index + 1) / (smoothwindow + 1);
+        }
+        if (index >= this.buffer.length - smoothwindow) {
+            return this.buffer[index] * (this.buffer.length - index) / (smoothwindow + 1);
+        }
     }
     gettopobj() {
         if (this.buffer.length === 0) {

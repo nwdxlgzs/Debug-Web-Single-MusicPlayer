@@ -54,7 +54,7 @@ html {
 
 .bottom-spectrum-canvas {
     width: 40vw;
-    height: 10vw;
+    height: 5vw;
 }
 
 .cover-container {
@@ -74,11 +74,6 @@ html {
     object-fit: cover;
 }
 
-.song-info {
-    text-align: center;
-    margin-top: 20px;
-}
-
 .controls-container {
     display: flex;
     align-items: center;
@@ -92,8 +87,8 @@ html {
     background-size: cover;
     background-color: transparent;
     border: none;
-    width: 50px;
-    height: 50px;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
     filter: brightness(100) saturate(100%);
 }
@@ -142,6 +137,8 @@ html {
     border: none;
     cursor: pointer;
     filter: brightness(100) saturate(100%);
+    margin-right: 30px;
+
 }
 
 .volume-control {
@@ -154,36 +151,6 @@ html {
     width: 32px;
     writing-mode: bt-lr;
     writing-mode: vertical-lr;
-}
-
-
-/* 主容器使用 Flexbox 布局 */
-.player-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    justify-content: space-between;
-}
-
-/* 音乐播放器左侧容器 */
-.left-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-basis: 50%;
-    height: 80vh;
-    z-index: 1;
-}
-
-/* 音乐播放器右侧容器 */
-.right-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    flex-basis: 50%;
-    height: 80vh;
-    z-index: 2;
 }
 
 /* Canvas和封面的容器 */
@@ -203,6 +170,24 @@ html {
 
 /* 歌曲信息样式 */
 .song-info {
+    margin-top: 40px;
+    text-align: center;
+    align-items: center;
+}
+
+
+.song-title {
+    display: block;
+    color: #ffffff;
+    font-size: 4.2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.artist-name {
+    display: block;
+    color: #ffffff;
+    font-size: 4em;
     text-align: center;
 }
 
@@ -211,28 +196,47 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 10px;
+    width: 100%;
 }
 
-/* 歌词容器样式 */
+
+.player-container {
+    display: flex;
+    height: 100vh;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: start;
+}
+
+.left-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-basis: 50%;
+    height: 80vh;
+    z-index: 1;
+    flex-basis: auto;
+    width: 50%;
+}
+
+.right-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-basis: 50%;
+    height: 80vh;
+    z-index: 2;
+    text-align: center;
+    align-items: center;
+    flex-basis: auto;
+    width: 50%;
+}
+
 .lyrics-container {
     text-align: center;
-}
-
-@media (min-width: 768px) {
-    .player-container {
-        flex-direction: row;
-        align-items: start;
-    }
-
-    .left-container,
-    .right-container {
-        flex-basis: auto;
-        width: 50%;
-    }
-
-    .lyrics-container {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-    }
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
