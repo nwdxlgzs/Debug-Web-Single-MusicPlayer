@@ -13,18 +13,28 @@ const lyricsElement = document.getElementById('lyrics');
  * @param {number} progress 
  * @param {number | null} currentTime 
  */
+var lastLyricIndex = -1;
 export function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
         timeElapsed.textContent = formatTime(currentTime);
-        let currentLyricIndex=0;
+        let currentLyricIndex = 0;
         for (let i = 0; i < lyricsArray.length; i++) {
             if (currentTime >= lyricsArray[i].time) {
                 currentLyricIndex = i;
             }
         }
-        // 更新元素的文本
-        lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
+        if (currentLyricIndex != lastLyricIndex) {
+            const text = lyricsArray[currentLyricIndex].text;
+            lyricsElement.classList.remove('lyrics-active');
+            // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
+            setTimeout(() => {
+                lyricsElement.textContent = text;
+                lyricsElement.classList.add('lyrics-active');
+                lastLyricIndex = currentLyricIndex;
+            }, 100);
+            return;
+        }
     }
 }
 
@@ -101,12 +111,5 @@ document.addEventListener('click', function (event) {
     if (!isClickInsideVolumeContainer) {
         // 如果点击的是音量按钮或滑动条之外的地方，则隐藏音量滑动条
         volumeControl.style.display = 'none';
-    }
-});
-
-// 空格键控制播放暂停
-document.addEventListener('keydown', function (event) {
-    if (event.code === 'Space') {
-        playPauseButton.click();
     }
 });

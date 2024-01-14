@@ -41,6 +41,7 @@ fetchWithTimeout(jsonURL)
                 musicURL: './resources/sound',
                 mediaType: "audio/mpeg",
                 lrcFile: "./resources/sound_lrc",//null,
+                lrcExistLike: "center",//中心center,隐藏hide,靠左left
                 animationSTAN: "circle"//圆周平移circle,无动画none,变长变短skew,左右倾斜stretch
             };
         }
@@ -159,12 +160,44 @@ fetchWithTimeout(jsonURL)
                     lyricsArray.sort((a, b) => {
                         return a.time - b.time;
                     });
+                    document.getElementById('lyrics').textContent = "点击播放即可使用lrc歌词数据";
                 })
                 .catch(error => {
                 });
         } else {
             // 解析LRC文本并创建数组
             lyricsArray = [{ time: 0, text: "暂无歌词" }];
+            document.getElementById('lyrics').textContent = "点击播放即可使用lrc歌词数据";
+        }
+        if (data.lrcExistLike !== undefined && data.lrcExistLike !== null && data.lrcExistLike !== "") {
+            // <div class="lyrics-container-container">
+            const lyricsContainerContainer = document.querySelector('.lyrics-container-container');
+            switch (data.lrcExistLike) {
+                case "center": {
+                    if (!lyricsContainerContainer.classList.contains('lyrics-container-container')) {
+                        lyricsContainerContainer.classList.add('lyrics-container-container');
+                    }
+                    if (lyricsContainerContainer.style.cssText !== "") {
+                        lyricsContainerContainer.style.cssText = "";
+                    }
+                    break
+                }
+                case "hide": {
+                    lyricsContainerContainer.style.cssText = `
+                    display: none;
+                    `;
+                    break
+                }
+                case "left": {
+                    if (lyricsContainerContainer.classList.contains('lyrics-container-container')) {
+                        lyricsContainerContainer.classList.remove('lyrics-container-container');
+                    }
+                    if (lyricsContainerContainer.style.cssText !== "") {
+                        lyricsContainerContainer.style.cssText = "";
+                    }
+                    break
+                }
+            };
         }
 
     })

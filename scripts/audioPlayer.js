@@ -92,12 +92,24 @@ class AudioPlayer {
         this.audio.currentTime = duration;
     }
 
+    get currentTime() {
+        return this.audio.currentTime;
+    }
+
     /**
      * @param {number} volume
 
      */
     set volume(volume) {
         this.audio.volume = volume;
+    }
+
+    get volume() {
+        return this.audio.volume;
+    }
+
+    set duration(duration) {
+        this.audio.duration = duration;
     }
 
     get duration() {

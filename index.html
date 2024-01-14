@@ -42,7 +42,6 @@
                         <span id="time-elapsed" class="time-elapsed">00:00</span>
                         <span id="total-duration" class="total-duration">00:00</span>
                     </div>
-
                     <input type="range" id="song-progress" class="song-progress" min="0" max="100" value="0">
                 </div>
                 <div class="volume-container">
@@ -57,12 +56,14 @@
 
         </div>
 
-        <!-- 歌词 -->
+
+    </div>
+    <!-- 歌词 -->
+    <div class="lyrics-container-container">
         <div class="lyrics-container">
-            <p id="lyrics" class="lyrics">点击开始播放</p>
+            <p id="lyrics" class="lyrics lyrics-active">播放器正在努力连线歌词中</p>
         </div>
     </div>
-
     <script async src="./scripts/attach.js"></script>
     <script defer type="module" src="./scripts/main.js"></script>
 </body>

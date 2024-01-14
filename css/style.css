@@ -6,13 +6,6 @@ html {
     font-family: 'Arial', sans-serif;
 }
 
-.player-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-}
 
 .blur-background {
     position: fixed;
@@ -186,6 +179,7 @@ html {
 .total-duration {
     flex-basis: 50%;
     text-align: center;
+    color: #ffffff;
 }
 
 .time-elapsed {
@@ -196,10 +190,6 @@ html {
     text-align: right;
 }
 
-
-.song-progress {
-    width: 100%;
-}
 
 .volume-container {
     position: relative;
@@ -280,11 +270,14 @@ html {
 
 .player-container {
     display: flex;
-    height: 100vh;
+    height: 80vh;
+    width: 100vw;
     justify-content: space-between;
     flex-direction: row;
-    align-items: start;
+    align-items: center;
 }
+
+
 
 .left-container {
     display: flex;
@@ -311,9 +304,176 @@ html {
     width: 50%;
 }
 
+.lyrics-container::-webkit-scrollbar {
+    display: none;
+    /* 隐藏滚动条 */
+}
+
+.lyrics-container-container {
+    display: flex;
+    justify-content: center;
+    /* 水平居中 */
+    align-items: center;
+    /* 垂直居中 */
+}
+
 .lyrics-container {
+    display: inline-block;
+    position: relative;
     text-align: center;
-    position: absolute;
-    bottom: 0;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    margin-left: 5vw;
+    margin-top: 0vw;
+    margin-right: 5vw;
+    z-index: 999;
+    max-height: 15vh;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE和Edge */
+    overflow: scroll;
+    vertical-align: middle;
+}
+
+.lyrics {
+    display: inline-block;
+    font-size: 1.5em;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+    white-space: pre-wrap;
+    text-align: center;
+    margin: 20px;
+    padding: 10px 0;
+}
+
+.lyrics-active {
+    opacity: 1;
+}
+
+
+/* 自定义滑块样式 */
+.song-progress {
+    -webkit-appearance: none;
+    /* 移除默认外观 */
+    -moz-appearance: none;
+    appearance: none;
     width: 100%;
+    /* 进度条宽度 */
+    height: 8px;
+    /* 进度条高度 */
+    border-radius: 5px;
+    /* 圆角效果 */
+    background: #ddd;
+    /* 进度条剩余部分的颜色 */
+    outline: none;
+    /* 移除轮廓 */
+    opacity: 0.7;
+    /* 透明度设置 */
+    transition: opacity .2s;
+    /* 过渡动画 */
+}
+
+/* 自定义进度条（滑块）的样式 */
+.song-progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    /* 移除默认外观 */
+    appearance: none;
+    margin-top: -6px;
+    width: 20px;
+    /* 滑块宽度 */
+    height: 20px;
+    /* 滑块高度 */
+    border-radius: 50%;
+    /* 圆形滑块 */
+    background: #ffffff;
+    /* 滑块颜色 */
+    cursor: pointer;
+    /* 鼠标光标变成手指 */
+    box-shadow: 0 0 1px #000;
+    /* 滑块阴影 */
+    transition: background .3s ease-in-out;
+    /* 背景颜色的过渡动画 */
+}
+
+/* 自定义进度条（滑块）的样式 for Firefox */
+.song-progress::-moz-range-thumb {
+    margin-top: -6px;
+    width: 20px;
+    /* 滑块宽度 */
+    height: 20px;
+    /* 滑块高度 */
+    border: none;
+    /* 移除边框 */
+    border-radius: 50%;
+    /* 圆形滑块 */
+    background: #ffffff;
+    /* 滑块颜色 */
+    cursor: pointer;
+    /* 鼠标光标变成手指 */
+}
+
+/* 自定义进度条已完成部分的样式 */
+.song-progress::-webkit-slider-runnable-track {
+    width: 100%;
+    /* 进度条宽度 */
+    height: 8px;
+    /* 进度条高度 */
+    background: #ffffff;
+    /* 已完成部分颜色 */
+    border-radius: 5px;
+    /* 圆角效果 */
+}
+
+/* 自定义进度条已完成部分的样式 for Firefox */
+.song-progress::-moz-range-track {
+    width: 100%;
+    /* 进度条宽度 */
+    height: 8px;
+    /* 进度条高度 */
+    background: #ffffff;
+    /* 已完成部分颜色 */
+    border-radius: 5px;
+    /* 圆角效果 */
+}
+
+/* 悬停或点击滑块时的样式变化 */
+.song-progress:hover::-webkit-slider-thumb,
+.song-progress:focus::-webkit-slider-thumb,
+.song-progress:active::-webkit-slider-thumb {
+    background: #ffffff;
+    /* 改变颜色 */
+}
+
+/* 悬停或点击滑块时的样式变化 for Firefox */
+.song-progress:hover::-moz-range-thumb,
+.song-progress:focus::-moz-range-thumb,
+.song-progress:active::-moz-range-thumb {
+    background: #ffffff;
+    /* 改变颜色 */
+}
+
+/* 滑块动画 */
+@keyframes thumb-animation {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.song-progress:active::-webkit-slider-thumb {
+    animation: thumb-animation 0.5s ease-in-out;
+}
+
+.song-progress:active::-moz-range-thumb {
+    animation: thumb-animation 0.5s ease-in-out;
 }
