@@ -6,6 +6,6 @@
     "musicURL": "./resources/sound",
     "mediaType": "audio/mpeg",
     "lrcFile": "./resources/sound_lrc",
-    "lrcExistLike": "left",
+    "lrcExistLike": "center",
     "animationSTAN": "circle"
 }

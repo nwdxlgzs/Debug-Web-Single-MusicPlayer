@@ -47,7 +47,13 @@ if (window.location.origin.endsWith('.github.io')) {
  */
 
 /**
- * @type {{ time:number, text:string }[] | null}
+ * @typedef {Object} LyricLine
+ * @property {number} time
+ * @property {string} text
+ */
+
+/**
+ * @type {?LyricLine[]}
  */
 export let lyricsArray = undefined
 

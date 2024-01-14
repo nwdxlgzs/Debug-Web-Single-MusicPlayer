@@ -8,17 +8,20 @@ const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 const lyricsElement = document.getElementById('lyrics');
 
+let lastLyricIndex = -1;
+/**
+ * @type {number}
+*/
+let lyricTimeoutId = undefined
 /**
  * 
  * @param {number} progress 
  * @param {number | null} currentTime 
  */
-var lastLyricIndex = -1;
 export async function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
         const { lyricsArray, data: { lrcExistLike } } = await import('./attach.js');
-        console.log(lrcExistLike);
         if (lyricsArray !== undefined) {
             timeElapsed.textContent = formatTime(currentTime);
             let currentLyricIndex = 0;
@@ -29,18 +32,32 @@ export async function changeProgress(progress, currentTime) {
                     break
                 }
             }
-            if (currentLyricIndex !== lastLyricIndex) {
-                const text = lyricsArray[currentLyricIndex].text;
+            // 新的歌词出现前提前隐藏文字
+            if (currentLyricIndex < lyricsArray.length - 1
+                && lyricsArray[currentLyricIndex + 1].text.trim() !== ''
+                && currentTime >= lyricsArray[currentLyricIndex + 1].time - 0.2) {
                 lyricsElement.classList.remove('lyrics-active');
-                // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
+            }
+            if (currentLyricIndex !== lastLyricIndex) {
+                lastLyricIndex = currentLyricIndex;
+                clearTimeout(lyricTimeoutId)
+                lyricTimeoutId = undefined
+                const text = lyricsArray[currentLyricIndex].text;
                 if (text.trim() !== '') {
-                    setTimeout(() => {
+                    if (isLyricsHidden()) {
+                        // 如果歌词正在隐藏，就立马改变文字，因为此时动画作用的是整个容器
+                        changeLyricsExistLike(lrcExistLike)
+                        lyricsElement.textContent = text;
+                    } else {
+                        // 如果歌词正在隐藏，先移除 lyrics-active 再延时添加，因为此时动画作用的是这个文字
+                        // lyricsElement.classList.remove('lyrics-active');
+                        // lyricTimeoutId = setTimeout(() => {
                         lyricsElement.textContent = text;
                         lyricsElement.classList.add('lyrics-active');
-                        lastLyricIndex = currentLyricIndex;
-                    }, 200);
-                    changeLyricsExistLike(lrcExistLike)
+                        // }, 200);
+                    }
                 } else {
+                    // 空字符串，隐藏歌词
                     changeLyricsExistLike('hide')
                 }
                 return;
@@ -180,6 +197,11 @@ function changeSongTitle(data) {
     // #endregion 标题动画
 }
 
+function isLyricsHidden() {
+    const lyricsContainerContainer = document.getElementById('lyrics-container-container');
+    return lyricsContainerContainer.dataset.existLike === 'hide'
+}
+
 /**
  * 
  * @param {string} lrcExistLike 
@@ -191,21 +213,20 @@ function changeLyricsExistLike(lrcExistLike) {
         return
     }
     lyricsContainerContainer.dataset.existLike = lrcExistLike
-    lyricsContainerContainer.classList.remove('lyrics-container-container_hide')
-    lyricsContainerContainer.classList.remove('lyrics-container-container_left')
-    switch (lrcExistLike) {
-        case "center": {
-            break
-        }
-        case "hide": {
-            lyricsContainerContainer.classList.add('lyrics-container-container_hide');
-            break
-        }
-        case "left": {
-            lyricsContainerContainer.classList.add('lyrics-container-container_left');
-            break
-        }
-    };
+    if (lrcExistLike === 'hide') {
+        lyricsContainerContainer.classList.add('lyrics-container-container_hide');
+        return
+    } else {
+        lyricsContainerContainer.classList.remove('lyrics-container-container_hide')
+        lyricsContainerContainer.classList.remove('lyrics-container-container_left')
+        switch (lrcExistLike) {
+            case "center": break;
+            case "left": {
+                lyricsContainerContainer.classList.add('lyrics-container-container_left');
+                break
+            }
+        };
+    }
 }
 
 // 音量按钮点击事件处理函数
