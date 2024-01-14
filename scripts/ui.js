@@ -17,7 +17,8 @@ var lastLyricIndex = -1;
 export async function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
-        const { lyricsArray } = await import('./attach.js');
+        const { lyricsArray, data: { lrcExistLike } } = await import('./attach.js');
+        console.log(lrcExistLike);
         if (lyricsArray !== undefined) {
             timeElapsed.textContent = formatTime(currentTime);
             let currentLyricIndex = 0;
@@ -32,11 +33,16 @@ export async function changeProgress(progress, currentTime) {
                 const text = lyricsArray[currentLyricIndex].text;
                 lyricsElement.classList.remove('lyrics-active');
                 // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
-                setTimeout(() => {
-                    lyricsElement.textContent = text;
-                    lyricsElement.classList.add('lyrics-active');
-                    lastLyricIndex = currentLyricIndex;
-                }, 100);
+                if (text.trim() !== '') {
+                    setTimeout(() => {
+                        lyricsElement.textContent = text;
+                        lyricsElement.classList.add('lyrics-active');
+                        lastLyricIndex = currentLyricIndex;
+                    }, 200);
+                    changeLyricsExistLike(lrcExistLike)
+                } else {
+                    changeLyricsExistLike('hide')
+                }
                 return;
             }
         }
@@ -178,26 +184,25 @@ function changeSongTitle(data) {
  * 
  * @param {string} lrcExistLike 
  */
-function changeLyricsStyle(lrcExistLike) {
+function changeLyricsExistLike(lrcExistLike) {
     // <div class="lyrics-container-container">
-    const lyricsContainerContainer = document.querySelector('.lyrics-container-container');
+    const lyricsContainerContainer = document.getElementById('lyrics-container-container');
+    if (lyricsContainerContainer.dataset.existLike === lrcExistLike) {
+        return
+    }
+    lyricsContainerContainer.dataset.existLike = lrcExistLike
+    lyricsContainerContainer.classList.remove('lyrics-container-container_hide')
+    lyricsContainerContainer.classList.remove('lyrics-container-container_left')
     switch (lrcExistLike) {
         case "center": {
-            if (!lyricsContainerContainer.classList.contains('lyrics-container-container')) {
-                lyricsContainerContainer.classList.add('lyrics-container-container');
-            }
-            lyricsContainerContainer.style.display = undefined;
             break
         }
         case "hide": {
-            lyricsContainerContainer.style.display = "none";
+            lyricsContainerContainer.classList.add('lyrics-container-container_hide');
             break
         }
         case "left": {
-            if (lyricsContainerContainer.classList.contains('lyrics-container-container')) {
-                lyricsContainerContainer.classList.remove('lyrics-container-container');
-            }
-            lyricsContainerContainer.style.display = undefined;
+            lyricsContainerContainer.classList.add('lyrics-container-container_left');
             break
         }
     };
@@ -246,6 +251,6 @@ import('./attach.js').then(({ data, ensureLyricsArray }) => {
     }
 
     if (typeof data.lrcExistLike === 'string' && data.lrcExistLike) {
-        changeLyricsStyle(data.lrcExistLike)
+        changeLyricsExistLike(data.lrcExistLike)
     }
 })

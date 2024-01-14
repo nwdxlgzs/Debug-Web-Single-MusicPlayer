@@ -317,6 +317,16 @@ html {
     /* 水平居中 */
     align-items: center;
     /* 垂直居中 */
+    transition: opacity 0.2s ease-in-out;
+}
+
+.lyrics-container-container_hide {
+    opacity: 0;
+}
+
+.lyrics-container-container_left {
+    align-items: start;
+    justify-content: left;
 }
 
 .lyrics-container {
@@ -344,7 +354,7 @@ html {
     font-size: 1.5em;
     color: #fff;
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
     white-space: pre-wrap;
     text-align: center;
     margin: 20px;
