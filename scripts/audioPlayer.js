@@ -107,7 +107,7 @@ class AudioPlayer {
 
      */
     set volume(volume) {
-        if (isNaN(duration)) {
+        if (isNaN(volume)) {
             // console.warn('Invalid volume', duration);
             return;
         }
