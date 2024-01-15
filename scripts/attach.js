@@ -1,6 +1,6 @@
 let SHARE_SINGLE_DOWNLOAD_URL = null;
 let MEDIA_SOURCE_BUFFER_TYPE = null;
-let lyricsArray = null;
+var lyricsArray = null;
 function fetchWithTimeout(url, timeout = 2000) {
     return new Promise((resolve, reject) => {
         // 设置超时定时器
