@@ -72,7 +72,7 @@ export function draw(
     bottomSpectrumCanvas
 ) {
     const SpectrumCanvasBubbles = [];
-    var MainColorForCover = [255, 255, 255];
+    let MainColorForCover = [255, 255, 255];
     {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');

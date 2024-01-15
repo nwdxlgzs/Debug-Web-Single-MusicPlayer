@@ -1,6 +1,6 @@
-var SHARE_SINGLE_DOWNLOAD_URL = null;
-var MEDIA_SOURCE_BUFFER_TYPE = null;
-var lyricsArray = null;
+let SHARE_SINGLE_DOWNLOAD_URL = null;
+let MEDIA_SOURCE_BUFFER_TYPE = null;
+let lyricsArray = null;
 function fetchWithTimeout(url, timeout = 2000) {
     return new Promise((resolve, reject) => {
         // 设置超时定时器
@@ -75,15 +75,15 @@ fetchWithTimeout(jsonURL)
             switch (data.animationSTAN) {
                 case 'circle': {
                     // 指定动画运行速度的范围
-                    var a = 2; // 最小持续时间（秒）
-                    var b = 5; // 最大持续时间（秒）
+                    let a = 2; // 最小持续时间（秒）
+                    let b = 5; // 最大持续时间（秒）
                     // 选择需要动画的元素
-                    var elements = document.querySelectorAll('.song-info span');
+                    let elements = document.querySelectorAll('.song-info span');
                     elements.forEach(function (element) {
-                        var text = element.textContent;
-                        var newHTML = '';
+                        let text = element.textContent;
+                        let newHTML = '';
                         // 拆分文本并为每个字符创建一个新的span
-                        for (var i = 0; i < text.length; i++) {
+                        for (let i = 0; i < text.length; i++) {
                             newHTML +=
                                 '<span class="char-animation-target">' +
                                 text[i] +
@@ -93,26 +93,26 @@ fetchWithTimeout(jsonURL)
                         element.innerHTML = newHTML;
                     });
                     // 获取所有新创建的字符元素
-                    var chars = document.querySelectorAll(
+                    let chars = document.querySelectorAll(
                         '.char-animation-target'
                     );
                     chars.forEach(function (char) {
                         if (char.textContent.trim() !== '') {
                             // 忽略空白字符
                             // 为每个字符指定随机动画持续时间
-                            var duration = Math.random() * (b - a) + a;
+                            let duration = Math.random() * (b - a) + a;
                             char.style.animationDuration = `${duration}s`;
                         }
                     });
                     break;
                 }
                 case 'skew': {
-                    var elements = document.querySelectorAll('.song-info span');
+                    let elements = document.querySelectorAll('.song-info span');
                     elements.forEach(function (element) {
-                        var text = element.textContent;
-                        var newHTML = '';
-                        for (var i = 0; i < text.length; i++) {
-                            var charSpan =
+                        let text = element.textContent;
+                        let newHTML = '';
+                        for (let i = 0; i < text.length; i++) {
+                            let charSpan =
                                 '<span class="char-animation-target">' +
                                 text[i] +
                                 '</span>';
@@ -127,18 +127,18 @@ fetchWithTimeout(jsonURL)
                         }
                         element.innerHTML = newHTML;
                     });
-                    var chars = document.querySelectorAll(
+                    let chars = document.querySelectorAll(
                         '.char-animation-target'
                     );
                     break;
                 }
                 case 'stretch': {
-                    var elements = document.querySelectorAll('.song-info span');
+                    let elements = document.querySelectorAll('.song-info span');
                     elements.forEach(function (element) {
-                        var text = element.textContent;
-                        var newHTML = '';
-                        for (var i = 0; i < text.length; i++) {
-                            var charSpan =
+                        let text = element.textContent;
+                        let newHTML = '';
+                        for (let i = 0; i < text.length; i++) {
+                            let charSpan =
                                 '<span class="char-animation-target">' +
                                 text[i] +
                                 '</span>';
@@ -153,12 +153,12 @@ fetchWithTimeout(jsonURL)
                         }
                         element.innerHTML = newHTML;
                     });
-                    var chars = document.querySelectorAll(
+                    let chars = document.querySelectorAll(
                         '.char-animation-target'
                     );
                     chars.forEach(function (char) {
                         if (char.textContent.trim() !== '') {
-                            var duration = Math.random() * (10 - 4) + 4; // 10到4秒之间的随机持续时间
+                            let duration = Math.random() * (10 - 4) + 4; // 10到4秒之间的随机持续时间
                             char.style.animationDuration = `${duration}s`;
                         }
                     });
