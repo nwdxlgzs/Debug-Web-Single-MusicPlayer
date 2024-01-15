@@ -129,15 +129,21 @@ document.addEventListener('keydown', function (event) {
     ) {
         if (event.code === 'Space') {
             event.preventDefault();
+
             playPauseButton.click();
         } else if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
             event.preventDefault();
+
             updateProgress(
                 event.code === 'ArrowLeft' ? -progressStep : progressStep
             );
         } else if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
             event.preventDefault();
-            updateVolume(event.code === 'ArrowUp' ? volumeStep : -volumeStep);
+
+            updateVolume(
+                event.code === 'ArrowUp' ? volumeStep : -volumeStep,
+                maxVolume
+            );
         }
     }
 });

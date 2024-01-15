@@ -14,8 +14,9 @@ export function formatTime(time) {
 /**
  *
  * @param {number} step
+ * @param {number} maxVolume
  */
-export function updateVolume(step) {
+export function updateVolume(step, maxVolume = 100) {
     const volume = player.volume * 100;
     const newVolume = volume + step;
     if (newVolume >= 0 && newVolume <= maxVolume) {
