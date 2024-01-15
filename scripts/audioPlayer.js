@@ -3,9 +3,9 @@
  */
 class AudioPlayer {
     /**
-     * @type {MediaElementAudioSourceNode}
+     * @type {MediaSource}
      */
-    source; // 媒体资源
+    mediaSource; // 媒体资源
 
     /**
      * @type {HTMLAudioElement}
@@ -27,23 +27,61 @@ class AudioPlayer {
      */
     init = false;
 
-    constructor() { }
+    constructor() {}
 
     /**
      *
      * @param {string | null} src
      */
-    create(src = null, mediaType) {
+    create(src = null) {
+        this.mediaSource = new MediaSource();
         this.audio = new Audio();
-        this.audio.src = src
-        this.audioContext = new AudioContext();
-        this.source = this.audioContext.createMediaElementSource(this.audio)
+        this.audio.src = src ?? URL.createObjectURL(this.mediaSource);
 
         this.audio.addEventListener('durationchange', () => {
             if (this.audio.duration !== Infinity) {
                 this.audio.onloadedmetadata();
             }
         });
+
+        this.#loadMusic();
+    }
+
+    #loadMusic() {
+        const mediaSource = this.mediaSource;
+
+        mediaSource.addEventListener('sourceopen', sourceOpen);
+
+        async function sourceOpen() {
+            try {
+                // 获取音乐文件的响应流
+                const response = await fetch(SHARE_SINGLE_DOWNLOAD_URL);
+
+                const sourceBuffer = mediaSource.addSourceBuffer(MEDIA_SOURCE_BUFFER_TYPE); // 音频格式需要与文件类型匹配
+
+                const reader = response.body.getReader();
+                const pump = async () => {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        mediaSource.endOfStream();
+
+                        // audio.play(); // 当音频数据加载完毕后播放
+                        return;
+                    }
+
+                    sourceBuffer.appendBuffer(value); // 将数据块添加到sourceBuffer
+
+                    await new Promise(
+                        (resolve) => (sourceBuffer.onupdateend = resolve)
+                    );
+                    pump();
+                };
+
+                pump();
+            } catch (e) {
+                console.error('Error fetching audio', e);
+            }
+        }
     }
 
     /**
@@ -90,12 +128,17 @@ class AudioPlayer {
 
     play() {
         if (!this.init) {
+            const AudioContext = window.AudioContext;
+            
+            this.audioContext = new AudioContext();
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.minDecibels = -90;
             this.analyser.maxDecibels = -10;
             this.analyser.smoothingTimeConstant = 0.5;
             this.analyser.fftSize = AUDIO_FFTSIZE;
-            this.source.connect(this.analyser);
+            const sourceNode = this.audioContext.createMediaElementSource(this.audio);
+            sourceNode.connect(this.analyser);
+            
             this.analyser.connect(this.audioContext.destination);
             this.init = true;
         }
