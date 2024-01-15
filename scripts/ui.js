@@ -8,39 +8,57 @@ const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 const lyricsElement = document.getElementById('lyrics');
 
+let isSlideProgress = false;
+
+let lastLyricIndex = -1;
+
+let currentSongProgress = -1;
+
 /**
- * 
- * @param {number} progress 
- * @param {number | null} currentTime 
+ *
+ * @param {number} progress
+ * @param {number | null} currentTime
  */
-var lastLyricIndex = -1;
 export function changeProgress(progress, currentTime) {
-    songProgress.value = progress;
-    if (currentTime) {
-        timeElapsed.textContent = formatTime(currentTime);
-        let currentLyricIndex = 0;
-        for (let i = 0; i < lyricsArray.length; i++) {
-            if (currentTime >= lyricsArray[i].time) {
-                currentLyricIndex = i;
-            }
+    // 确保用户没有在滑动
+    if (!isSlideProgress) {
+        songProgress.value = progress;
+    }
+
+    if (!currentTime || isNaN(currentTime)) {
+        return;
+    }
+
+    timeElapsed.textContent = formatTime(currentTime);
+    let currentLyricIndex = 0;
+
+    for (let i = 0; i < lyricsArray.length; i++) {
+        if (currentTime >= lyricsArray[i].time) {
+            currentLyricIndex = i;
         }
-        if (currentLyricIndex != lastLyricIndex) {
-            const text = lyricsArray[currentLyricIndex].text;
-            lyricsElement.classList.remove('lyrics-active');
-            // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
-            setTimeout(() => {
-                lyricsElement.textContent = text;
-                lyricsElement.classList.add('lyrics-active');
-                lastLyricIndex = currentLyricIndex;
-            }, 100);
-            return;
-        }
+    }
+
+    if (currentLyricIndex != lastLyricIndex) {
+        const text = lyricsArray[currentLyricIndex].text;
+        lyricsElement.classList.remove('lyrics-active');
+        // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
+        setTimeout(() => {
+            lyricsElement.textContent = text;
+            lyricsElement.classList.add('lyrics-active');
+            lastLyricIndex = currentLyricIndex;
+        }, 100);
+        return;
     }
 }
 
+export function changeVolume(volume) {
+    volumeControl.style.display = 'block';
+    volumeControl.value = volume;
+}
+
 /**
- * 
- * @param {boolean} status 
+ *
+ * @param {boolean} status
  */
 export function changePlayButtonStatus(status) {
     if (!status) {
@@ -79,6 +97,10 @@ export function listenProgressChange(func) {
     });
 }
 
+export function clickPlayButton() {
+    playPauseButton.click();
+}
+
 /**
  *
  * @param {(progress: number) => void} func
@@ -100,6 +122,14 @@ volumeBtn.addEventListener('click', function () {
     } else {
         volumeControl.style.display = 'none';
     }
+});
+
+songProgress.addEventListener('mousedown', () => {
+    isSlideProgress = true;
+});
+
+songProgress.addEventListener('mouseup', () => {
+    isSlideProgress = false;
 });
 
 // 添加点击外部隐藏音量控制的事件监听
