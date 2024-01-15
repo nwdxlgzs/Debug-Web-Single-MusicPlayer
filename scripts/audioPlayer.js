@@ -91,6 +91,10 @@ class AudioPlayer {
 
      */
     set currentTime(duration) {
+        if (isNaN(duration)) {
+            // console.warn('Invalid duration', duration);
+            return;
+        }
         this.audio.currentTime = duration;
     }
 
@@ -103,6 +107,10 @@ class AudioPlayer {
 
      */
     set volume(volume) {
+        if (isNaN(duration)) {
+            // console.warn('Invalid volume', duration);
+            return;
+        }
         this.audio.volume = volume;
     }
 

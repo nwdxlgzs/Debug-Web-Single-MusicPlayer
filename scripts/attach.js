@@ -182,7 +182,7 @@ fetchWithTimeout(jsonURL)
                 })
                 .then((LRC_TEXT) => {
                     LRC_TEXT = LRC_TEXT.trim();
-                    const timeReg = /\[(\d{2}):(\d{2}\.\d{3})\]/;
+                    const timeReg = /\[(\d+):(\d+\.\d+)\]/;
                     const lines = LRC_TEXT.split(/\r\n|\n/); // 处理不同的换行符
                     lyricsArray = [];
                     lines.forEach((line) => {

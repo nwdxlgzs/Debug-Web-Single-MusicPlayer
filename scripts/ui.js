@@ -12,6 +12,8 @@ let isSlideProgress = false;
 
 let lastLyricIndex = -1;
 
+let currentSongProgress = -1;
+
 /**
  *
  * @param {number} progress
