@@ -1,11 +1,11 @@
 {
     "backgroundImage": "./images/background.png",
     "coverImage": "./images/cover.jpg",
-    "songTitle": "Heartbeat",
+    "songTitle": "Heartbeat 🎈",
     "artistName": "Cloudier",
     "musicURL": "./resources/sound",
     "mediaType": "audio/mpeg",
     "lrcFile": "./resources/sound_lrc",
-    "lrcExistLike": "left",
-    "animationSTAN": "skew"
+    "lrcExistLike": "center",
+    "animationSTAN": "circle"
 }

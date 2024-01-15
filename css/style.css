@@ -14,10 +14,12 @@ html {
     right: 0;
     bottom: 0;
     z-index: -1;
-    background-size: cover;
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
+    /* -webkit-backdrop-filter: blur(20px); */
+    /* backdrop-filter: blur(20px); */
     filter: blur(20px);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .blur-background::before {
@@ -315,6 +317,16 @@ html {
     /* 水平居中 */
     align-items: center;
     /* 垂直居中 */
+    transition: opacity 0.2s ease-in-out;
+}
+
+.lyrics-container-container_hide {
+    opacity: 0;
+}
+
+.lyrics-container-container_left {
+    align-items: start;
+    justify-content: left;
 }
 
 .lyrics-container {
@@ -342,7 +354,7 @@ html {
     font-size: 1.5em;
     color: #fff;
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
     white-space: pre-wrap;
     text-align: center;
     margin: 20px;
