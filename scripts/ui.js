@@ -1,4 +1,4 @@
-import { formatTime } from './utils.js';
+import { formatTime, updateProgress, updateVolume } from './utils.js';
 
 const playPauseButton = document.getElementById('playPause');
 const songProgress = document.getElementById('song-progress');
@@ -7,13 +7,19 @@ const totalDuration = document.getElementById('total-duration');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 const lyricsElement = document.getElementById('lyrics');
+const volumeControlInput = document.getElementById('volume-control');
+
+const volumeStep = 5; // 音量调整的步长
+const progressStep = 5; // 进度调整的步长
+const maxVolume = 100; // 音量的最大值
+
+let lastLyricIndex = -1;
 
 /**
- * 
- * @param {number} progress 
- * @param {number | null} currentTime 
+ *
+ * @param {number} progress
+ * @param {number | null} currentTime
  */
-var lastLyricIndex = -1;
 export function changeProgress(progress, currentTime) {
     songProgress.value = progress;
     if (currentTime) {
@@ -39,8 +45,8 @@ export function changeProgress(progress, currentTime) {
 }
 
 /**
- * 
- * @param {boolean} status 
+ *
+ * @param {boolean} status
  */
 export function changePlayButtonStatus(status) {
     if (!status) {
@@ -111,5 +117,27 @@ document.addEventListener('click', function (event) {
     if (!isClickInsideVolumeContainer) {
         // 如果点击的是音量按钮或滑动条之外的地方，则隐藏音量滑动条
         volumeControl.style.display = 'none';
+    }
+});
+
+// 键盘事件监听
+document.addEventListener('keydown', function (event) {
+    if (
+        event.target.tagName !== 'INPUT' &&
+        event.target.tagName !== 'TEXTAREA' &&
+        event.target.isContentEditable !== true
+    ) {
+        if (event.code === 'Space') {
+            event.preventDefault();
+            playPauseButton.click();
+        } else if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+            event.preventDefault();
+            updateProgress(
+                event.code === 'ArrowLeft' ? -progressStep : progressStep
+            );
+        } else if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
+            event.preventDefault();
+            updateVolume(event.code === 'ArrowUp' ? volumeStep : -volumeStep);
+        }
     }
 });

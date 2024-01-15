@@ -11,42 +11,32 @@ export function formatTime(time) {
     return `${minutes}:${formattedSeconds}`;
 }
 
-
-
 /**
  *
- * @param {string} hexString
- * @returns {Uint8Array}
+ * @param {number} step
  */
-export function hexStringToByteArray(hexString) {
-    const byteArray = [];
-    for (let i = 0; i < hexString.length; i += 2) {
-        byteArray.push(parseInt(hexString.substring(i, i + 2), 16));
+export function updateVolume(step) {
+    const volume = player.volume * 100;
+    const newVolume = volume + step;
+    if (newVolume >= 0 && newVolume <= maxVolume) {
+        const lastDisplay = volumeControlInput.style.display;
+        volumeControlInput.style.display = 'block';
+        player.volume = newVolume / 100;
+        volumeControlInput.value = newVolume;
     }
-    return new Uint8Array(byteArray);
 }
 
 /**
  *
- * @param {Uint8Array} byteArray
- * @returns {ArrayBuffer}
+ * @param {number} step
  */
-export function byteArrayToArrayBuffer(byteArray) {
-    const arrayBuffer = new ArrayBuffer(byteArray.length);
-    const uint8Array = new Uint8Array(arrayBuffer);
-    uint8Array.set(byteArray);
-    return arrayBuffer;
+export function updateProgress(step) {
+    const progress = (player.currentTime / player.duration) * 100;
+    const newProgress = progress + step;
+    if (newProgress >= 0 && newProgress <= 100) {
+        player.currentTime = player.duration * (newProgress / 100);
+    }
 }
-
-/**
- *
- * @param {string} hexString
- * @returns {ArrayBuffer}
- */
-export function hexStringToArrayBuffer(hexString) {
-    return byteArrayToArrayBuffer(hexStringToByteArray(hexString));
-}
-
 
 export function create2DSmoothedArray(data2D, windowSize) {
     const rows = data2D.length;
@@ -55,8 +45,16 @@ export function create2DSmoothedArray(data2D, windowSize) {
         for (let j = 0; j < cols; j++) {
             let sum = 0;
             let count = 0;
-            for (let di = -Math.floor(windowSize / 2); di <= Math.floor(windowSize / 2); di++) {
-                for (let dj = -Math.floor(windowSize / 2); dj <= Math.floor(windowSize / 2); dj++) {
+            for (
+                let di = -Math.floor(windowSize / 2);
+                di <= Math.floor(windowSize / 2);
+                di++
+            ) {
+                for (
+                    let dj = -Math.floor(windowSize / 2);
+                    dj <= Math.floor(windowSize / 2);
+                    dj++
+                ) {
                     // 计算环形索引
                     let rowIndex = (i + di + rows) % rows;
                     let colIndex = (j + dj + cols) % cols;
@@ -74,7 +72,9 @@ export function create2DSmoothedArray(data2D, windowSize) {
 
 export function sliceUint8ArrayVertically(dataArray, numSlices) {
     if (dataArray.length === 0 || numSlices <= 0) {
-        throw new Error('Invalid input: dataArray cannot be empty and numSlices must be positive');
+        throw new Error(
+            'Invalid input: dataArray cannot be empty and numSlices must be positive'
+        );
     }
 
     const rows = dataArray.length; // 数组中Uint8Array的个数
@@ -87,11 +87,17 @@ export function sliceUint8ArrayVertically(dataArray, numSlices) {
         const endCol = Math.min(startCol + sliceSize, cols);
 
         // 创建新的Uint8Array来存放切片数据
-        const newSlice = new Array(rows).fill(null).map(() => new Uint8Array(endCol - startCol));
+        const newSlice = new Array(rows)
+            .fill(null)
+            .map(() => new Uint8Array(endCol - startCol));
 
         // 遍历每个Uint8Array，拷贝数据到切片
         for (let row = 0; row < rows; row++) {
-            for (let col = startCol, newCol = 0; col < endCol; col++, newCol++) {
+            for (
+                let col = startCol, newCol = 0;
+                col < endCol;
+                col++, newCol++
+            ) {
                 newSlice[row][newCol] = dataArray[row][col];
             }
         }
@@ -103,9 +109,7 @@ export function sliceUint8ArrayVertically(dataArray, numSlices) {
     return slicedArrays;
 }
 
-
-
-export class MyIntQueue {
+export class IntQueue {
     constructor(maxLength, initialData = 0) {
         this.maxLength = maxLength;
         this.buffer = new Array(maxLength).fill(initialData);
@@ -124,24 +128,38 @@ export class MyIntQueue {
         }
         return this.buffer[index];
     }
-    smoothget(index, smoothwindow) {
+
+    getWithSmooth(index, smoothWindowSize) {
         if (index < 0 || index >= this.buffer.length) {
-            throw new Error('Index out of bounds : length = ' + this.buffer.length + ' index = ' + index);
+            throw new Error(
+                'Index out of bounds : length = ' +
+                    this.buffer.length +
+                    ' index = ' +
+                    index
+            );
         }
-        if (smoothwindow < 0) {
+        if (smoothWindowSize < 0) {
             throw new Error('Size must be a non-negative value');
         }
-        if ((smoothwindow === 0) || (index >= smoothwindow && index < this.buffer.length - smoothwindow)) {
+        if (
+            smoothWindowSize === 0 ||
+            (index >= smoothWindowSize &&
+                index < this.buffer.length - smoothWindowSize)
+        ) {
             return this.buffer[index];
         }
-        if (index < smoothwindow) {
-            return this.buffer[index] * (index + 1) / (smoothwindow + 1);
+        if (index < smoothWindowSize) {
+            return (this.buffer[index] * (index + 1)) / (smoothWindowSize + 1);
         }
-        if (index >= this.buffer.length - smoothwindow) {
-            return this.buffer[index] * (this.buffer.length - index) / (smoothwindow + 1);
+        if (index >= this.buffer.length - smoothWindowSize) {
+            return (
+                (this.buffer[index] * (this.buffer.length - index)) /
+                (smoothWindowSize + 1)
+            );
         }
     }
-    gettopobj() {
+
+    first() {
         if (this.buffer.length === 0) {
             throw new Error('Buffer is empty');
         }
