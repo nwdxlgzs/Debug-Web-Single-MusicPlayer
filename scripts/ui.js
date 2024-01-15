@@ -1,4 +1,4 @@
-import { formatTime, updateProgress, updateVolume } from './utils.js';
+import { formatTime } from './utils.js';
 
 const playPauseButton = document.getElementById('playPause');
 const songProgress = document.getElementById('song-progress');
@@ -7,7 +7,6 @@ const totalDuration = document.getElementById('total-duration');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 const lyricsElement = document.getElementById('lyrics');
-const volumeControlInput = document.getElementById('volume-control');
 
 const volumeStep = 5; // 音量调整的步长
 const progressStep = 5; // 进度调整的步长
@@ -42,6 +41,11 @@ export function changeProgress(progress, currentTime) {
             return;
         }
     }
+}
+
+export function changeVolume(volume) {
+    volumeControl.style.display = 'block'
+    volumeControl.value = volume;
 }
 
 /**
@@ -80,9 +84,11 @@ export function setTotalDuration(duration) {
  * @param {(progress: number) => void} func
  */
 export function listenProgressChange(func) {
-    songProgress.addEventListener('input', function () {
-        func(this.value);
-    });
+    songProgress.addEventListener('input', func);
+}
+
+export function clickPlayButton() {
+    playPauseButton.click();
 }
 
 /**
@@ -90,9 +96,7 @@ export function listenProgressChange(func) {
  * @param {(progress: number) => void} func
  */
 export function listenVolumeChange(func) {
-    volumeControl.addEventListener('input', function () {
-        func(this.value);
-    });
+    volumeControl.addEventListener('input', func);
 }
 
 // 音量按钮点击事件处理函数
@@ -117,33 +121,5 @@ document.addEventListener('click', function (event) {
     if (!isClickInsideVolumeContainer) {
         // 如果点击的是音量按钮或滑动条之外的地方，则隐藏音量滑动条
         volumeControl.style.display = 'none';
-    }
-});
-
-// 键盘事件监听
-document.addEventListener('keydown', function (event) {
-    if (
-        event.target.tagName !== 'INPUT' &&
-        event.target.tagName !== 'TEXTAREA' &&
-        event.target.isContentEditable !== true
-    ) {
-        if (event.code === 'Space') {
-            event.preventDefault();
-
-            playPauseButton.click();
-        } else if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
-            event.preventDefault();
-
-            updateProgress(
-                event.code === 'ArrowLeft' ? -progressStep : progressStep
-            );
-        } else if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
-            event.preventDefault();
-
-            updateVolume(
-                event.code === 'ArrowUp' ? volumeStep : -volumeStep,
-                maxVolume
-            );
-        }
     }
 });

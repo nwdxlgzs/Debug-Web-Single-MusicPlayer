@@ -11,33 +11,7 @@ export function formatTime(time) {
     return `${minutes}:${formattedSeconds}`;
 }
 
-/**
- *
- * @param {number} step
- * @param {number} maxVolume
- */
-export function updateVolume(step, maxVolume = 100) {
-    const volume = player.volume * 100;
-    const newVolume = volume + step;
-    if (newVolume >= 0 && newVolume <= maxVolume) {
-        const lastDisplay = volumeControlInput.style.display;
-        volumeControlInput.style.display = 'block';
-        player.volume = newVolume / 100;
-        volumeControlInput.value = newVolume;
-    }
-}
 
-/**
- *
- * @param {number} step
- */
-export function updateProgress(step) {
-    const progress = (player.currentTime / player.duration) * 100;
-    const newProgress = progress + step;
-    if (newProgress >= 0 && newProgress <= 100) {
-        player.currentTime = player.duration * (newProgress / 100);
-    }
-}
 
 export function create2DSmoothedArray(data2D, windowSize) {
     const rows = data2D.length;
