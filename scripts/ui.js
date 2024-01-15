@@ -8,9 +8,7 @@ const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 const lyricsElement = document.getElementById('lyrics');
 
-const volumeStep = 5; // 音量调整的步长
-const progressStep = 5; // 进度调整的步长
-const maxVolume = 100; // 音量的最大值
+let isSlideProgress = false;
 
 let lastLyricIndex = -1;
 
@@ -20,31 +18,39 @@ let lastLyricIndex = -1;
  * @param {number | null} currentTime
  */
 export function changeProgress(progress, currentTime) {
-    songProgress.value = progress;
-    if (currentTime) {
-        timeElapsed.textContent = formatTime(currentTime);
-        let currentLyricIndex = 0;
-        for (let i = 0; i < lyricsArray.length; i++) {
-            if (currentTime >= lyricsArray[i].time) {
-                currentLyricIndex = i;
-            }
+    // 确保用户没有在滑动
+    if (!isSlideProgress) {
+        songProgress.value = progress;
+    }
+
+    if (!currentTime || isNaN(currentTime)) {
+        return;
+    }
+
+    timeElapsed.textContent = formatTime(currentTime);
+    let currentLyricIndex = 0;
+
+    for (let i = 0; i < lyricsArray.length; i++) {
+        if (currentTime >= lyricsArray[i].time) {
+            currentLyricIndex = i;
         }
-        if (currentLyricIndex != lastLyricIndex) {
-            const text = lyricsArray[currentLyricIndex].text;
-            lyricsElement.classList.remove('lyrics-active');
-            // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
-            setTimeout(() => {
-                lyricsElement.textContent = text;
-                lyricsElement.classList.add('lyrics-active');
-                lastLyricIndex = currentLyricIndex;
-            }, 100);
-            return;
-        }
+    }
+
+    if (currentLyricIndex != lastLyricIndex) {
+        const text = lyricsArray[currentLyricIndex].text;
+        lyricsElement.classList.remove('lyrics-active');
+        // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
+        setTimeout(() => {
+            lyricsElement.textContent = text;
+            lyricsElement.classList.add('lyrics-active');
+            lastLyricIndex = currentLyricIndex;
+        }, 100);
+        return;
     }
 }
 
 export function changeVolume(volume) {
-    volumeControl.style.display = 'block'
+    volumeControl.style.display = 'block';
     volumeControl.value = volume;
 }
 
@@ -84,7 +90,9 @@ export function setTotalDuration(duration) {
  * @param {(progress: number) => void} func
  */
 export function listenProgressChange(func) {
-    songProgress.addEventListener('input', func);
+    songProgress.addEventListener('input', function () {
+        func(this.value);
+    });
 }
 
 export function clickPlayButton() {
@@ -96,7 +104,9 @@ export function clickPlayButton() {
  * @param {(progress: number) => void} func
  */
 export function listenVolumeChange(func) {
-    volumeControl.addEventListener('input', func);
+    volumeControl.addEventListener('input', function () {
+        func(this.value);
+    });
 }
 
 // 音量按钮点击事件处理函数
@@ -110,6 +120,14 @@ volumeBtn.addEventListener('click', function () {
     } else {
         volumeControl.style.display = 'none';
     }
+});
+
+songProgress.addEventListener('mousedown', () => {
+    isSlideProgress = true;
+});
+
+songProgress.addEventListener('mouseup', () => {
+    isSlideProgress = false;
 });
 
 // 添加点击外部隐藏音量控制的事件监听
