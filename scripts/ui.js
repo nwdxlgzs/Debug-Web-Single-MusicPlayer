@@ -6,6 +6,7 @@ const timeElapsed = document.getElementById('time-elapsed');
 const totalDuration = document.getElementById('total-duration');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
+const volumeControlContainer = document.getElementById('volume-control-container');
 const lyricsElement = document.getElementById('lyrics');
 
 let isSlideProgress = false;
@@ -113,15 +114,7 @@ export function listenVolumeChange(func) {
 
 // 音量按钮点击事件处理函数
 volumeBtn.addEventListener('click', function () {
-    // 切换音量滑动条的显示和隐藏
-    if (
-        volumeControl.style.display === 'none' ||
-        volumeControl.style.display === ''
-    ) {
-        volumeControl.style.display = 'block';
-    } else {
-        volumeControl.style.display = 'none';
-    }
+    volumeControlContainer.classList.toggle('volume-control-container__opened')
 });
 
 songProgress.addEventListener('mousedown', () => {
@@ -140,6 +133,7 @@ document.addEventListener('click', function (event) {
 
     if (!isClickInsideVolumeContainer) {
         // 如果点击的是音量按钮或滑动条之外的地方，则隐藏音量滑动条
-        volumeControl.style.display = 'none';
+        volumeControlContainer.classList.remove('volume-control-container__opened')
     }
+
 });

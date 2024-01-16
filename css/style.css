@@ -2,7 +2,6 @@ body,
 html {
     height: 100%;
     margin: 0;
-    overflow: hidden;
     font-family: "PingFang SC", "HarmonyOS_Sans_SC_Medium", Helvetica, Arial, Menlo, Monaco, "Microsoft YaHei", sans-serif;
 
 }
@@ -147,14 +146,6 @@ html {
     object-fit: cover;
 }
 
-.controls-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-}
-
-
 .play-pause-btn {
     background-image: url('../images/play_icon.svg');
     background-size: cover;
@@ -169,6 +160,7 @@ html {
 
 .time-progress-container {
     flex-grow: 1;
+    width: 0;
     margin: 0 20px;
 }
 
@@ -207,7 +199,6 @@ html {
     border: none;
     cursor: pointer;
     filter: brightness(100) saturate(100%);
-    margin-right: 30px;
 
 }
 
@@ -258,13 +249,14 @@ html {
     justify-content: center;
     padding: 10px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 
 .player-container {
     display: flex;
     height: 80vh;
-    width: 100vw;
+    width: 100%;
     justify-content: space-between;
     flex-direction: row;
     align-items: center;
@@ -395,10 +387,14 @@ html {
     /* 滑块高度 */
     border-radius: 0%;
     /* 圆形滑块 */
-    background: rgba(255, 255, 255, 0.6);
-    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 0.6);
-    transition: all 0.3s;
-
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 1) 0% 50%,
+            transparent 50% 100%);
+    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 1);
+    /* 已滚动完的轨道颜色，通过阴影实现 */
+    transition: opacity 0.3s;
+    opacity: 0.6;
+    /* linear-gradient 不支持动画，使用opacity代替 */
 }
 
 /* 自定义进度条（滑块）的样式 for Firefox */
@@ -413,9 +409,14 @@ html {
     /* 滑块高度 */
     border-radius: 0%;
     /* 圆形滑块 */
-    background: rgba(255, 255, 255, 0.6);
-    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 0.6);
-    transition: all 0.3s;
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 1) 0% 50%,
+            transparent 50% 100%);
+    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 1);
+    /* 已滚动完的轨道颜色，通过阴影实现 */
+    transition: opacity 0.3s;
+    opacity: 0.6;
+    /* linear-gradient 不支持动画，使用opacity代替 */
 }
 
 /* 自定义进度条整个基础部分的样式 */
@@ -478,13 +479,31 @@ html {
 
 .song-progress::-webkit-slider-thumb:hover {
     /* 圆形滑块 */
-    background: rgba(255, 255, 255, 1);
-    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 1);
+    opacity: 1;
 }
 
+.volume-control-container {
+    height: 100px;
+    width: 10px;
+    position: absolute;
+    left: calc(50% - 5px);
+    top: calc(-70px - 50px);
+    transition: all 0.3s ease;
+    transform: translateX(100%);
+    opacity: 0;
+    /* 元素高度的一半50px + 边距20px */
+
+}
+
+.volume-control-container__opened {
+    transform: translateX(0%);
+    opacity: 1;
+}
 
 /* 自定义滑块样式 */
 .volume-control {
+    --scale: 1, 1;
+    --translate-x: 0px;
     -webkit-appearance: none;
     /* 移除默认外观 */
     -moz-appearance: none;
@@ -498,18 +517,27 @@ html {
     outline: none;
     /* 移除轮廓 */
     /* 过渡动画 */
-
     cursor: pointer;
     overflow: hidden;
 
+    position: relative;
 
-    display: none;
-    position: absolute;
-    bottom: 50px;
-    left: 6%;
+    margin: 0;
+    /* 去除margin与padding */
+    padding: 0;
 
-    height: 10vh;
-    width: 20px;
+    left: 50%;
+    top: 50%;
+
+    height: 10px;
+    width: 100px;
+    transform: translate(-50%, -50%) rotateZ(-90deg) scale(var(--scale));
+    /* 通过旋转将其变为纵向滑块 */
+    /* 向左上移动50%，使元素居中 */
+    transition: all 0.3s ease;
+
+    display: block;
+    /* 设置为block，避免字体大小对位置的干扰 */
 }
 
 /* 自定义进度条（滑块）的样式 */
@@ -517,43 +545,49 @@ html {
     -webkit-appearance: none !important;
     /* 移除默认外观 */
     appearance: none !important;
-
+    margin-left: -2px;
     width: 20px;
     /* 滑块宽度 */
     height: 10px;
     /* 滑块高度 */
     border-radius: 0%;
     /* 圆形滑块 */
-    background: rgba(255, 255, 255, 0.6);
-    box-shadow: 0px -1000px 0 1000px rgba(255, 255, 255, 0.6);
-
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 1) 0% 50%,
+            transparent 50% 100%);
+    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 1);
+    /* 已滚动完的轨道颜色，通过阴影实现 */
+    transition: all 0.3s;
+    opacity: 0.6;
 }
 
-/* 自定义进度条（滑块）的样式 for Firefox */
 .volume-control::-moz-range-thumb {
     -webkit-appearance: none !important;
     /* 移除默认外观 */
     appearance: none !important;
-
-    width: 10px;
+    margin-left: -2px;
+    width: 20px;
     /* 滑块宽度 */
-    height: 20px;
+    height: 10px;
     /* 滑块高度 */
     border-radius: 0%;
     /* 圆形滑块 */
-    background: rgba(255, 255, 255, 1);
-    box-shadow: -1000px 0 0 1000px rgba(255, 255, 255, 1);
-
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 1) 0% 50%,
+            transparent 50% 100%);
+    box-shadow: -10000px 0 0 10000px rgba(255, 255, 255, 1);
+    /* 已滚动完的轨道颜色，通过阴影实现 */
+    transition: all 0.3s;
+    opacity: 0.6;
 }
 
 /* 自定义进度条整个基础部分的样式 */
 .volume-control::-webkit-slider-runnable-track {
-    height: 10vh;
-    width: 20px;
+    width: 100%;
+    /* 进度条宽度 */
+    height: 10px;
 
     /* 进度条高度 */
-    border-radius: 32px;
-    /* 圆角效果 */
     background: rgba(255, 255, 255, 0.2);
     /* 进度条剩余部分的颜色 */
     outline: none;
@@ -561,18 +595,18 @@ html {
 
     position: relative;
     overflow: hidden;
+    border-radius: 32px;
 
-    border-radius: 320px;
+    transition: all 0.3s ease-out;
 }
 
 /* 自定义进度条已完成部分的样式 for Firefox */
 .volume-control::-moz-range-track {
-    height: 10vh;
-    width: 20px;
+    width: 100%;
+    /* 进度条宽度 */
+    height: 10px;
 
     /* 进度条高度 */
-    border-radius: 320px;
-    /* 圆角效果 */
     background: rgba(255, 255, 255, 0.2);
     /* 进度条剩余部分的颜色 */
     outline: none;
@@ -580,8 +614,25 @@ html {
 
     position: relative;
     overflow: hidden;
-
     border-radius: 32px;
 
+    transition: all 0.3s ease-out;
+}
 
+/* 鼠标点击样式 */
+.volume-control:hover {
+    --scale: 1.01, 1.6;
+    transition: all 0.5s ease-in;
+
+}
+
+.volume-control::-webkit-slider-runnable-track:hover {
+    /* transform: scale(1.002, 1.001); */
+    transition: all 0.5s ease-in;
+
+}
+
+.volume-control::-webkit-slider-thumb:hover {
+    /* 圆形滑块 */
+    opacity: 1;
 }
