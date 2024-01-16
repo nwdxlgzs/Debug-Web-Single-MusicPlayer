@@ -71,15 +71,15 @@ class AudioPlayer {
 
                 const reader = response.body.getReader();
                 const pump = async () => {
-                    const { done, value } = await reader.read();
+                    let { done, value } = await reader.read();
                     if (done) {
                         mediaSource.endOfStream();
                         // audio.play(); // 当音频数据加载完毕后播放
                         return;
                     }
-
-                    sourceBuffer.appendBuffer(value); // 将数据块添加到sourceBuffer
-
+                    // 使用解密算法
+                    await window.attach.decrypt(value);
+                    sourceBuffer.appendBuffer(value);
                     await new Promise(
                         (resolve) => (sourceBuffer.onupdateend = resolve)
                     );

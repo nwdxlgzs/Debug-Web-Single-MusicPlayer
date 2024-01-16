@@ -1,4 +1,13 @@
 window.attach = {};//window全局变量
+window.attach.decrypt = async function (buff) {
+    // 使用Xor算法解密
+    const key = 0x6a;
+    for (let i = 0; i < buff.length; i++) {
+        buff[i] = buff[i] ^ key;
+    }
+    return buff;
+};
+
 function fetchWithTimeout(url, timeout = 2000) {
     return new Promise((resolve, reject) => {
         // 设置超时定时器
