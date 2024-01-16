@@ -107,7 +107,7 @@ export function draw(
                 window.attach.backgroundTypeData.colorSource === 'cover'
             ) {
                 ui.setGradientBackgroundColor(
-                    palettes[2] ?? palettes[1] ?? palettes[0]
+                    palettes[window.attach.backgroundTypeData.coverColorType ?? 1] 
                 );
             }
         } catch (e) {}

@@ -124,7 +124,7 @@ fetchWithTimeout(jsonURL)
 
             const blurBackground = document.getElementById('blur-background');
             // 背景类型
-            if (data.backgroundType === 'blur' ) {
+            if (data.backgroundType === 'blur') {
                 blurBackground.style.cssText = `
             background: url('${data.backgroundImage}') no-repeat center center;
             background-size: cover;
@@ -136,12 +136,12 @@ fetchWithTimeout(jsonURL)
                 background-size: cover;
               `;
 
-                // 修改元素 class
-
-                blurBackground.classList.remove('blur-background');
-                blurBackground.classList.add('gradient-background');
-
+                // 如果为自定义颜色
                 if (data.backgroundTypeData.colorSource === 'custom') {
+                    // 在未确定修改之前不要更换 class
+                    blurBackground.classList.remove('blur-background');
+                    blurBackground.classList.add('gradient-background');
+
                     // 设置为自定义 css 变量
                     blurBackground.style.setProperty(
                         '--start-gradient-color',
@@ -372,6 +372,9 @@ fetchWithTimeout(jsonURL)
  * @property {string} colorSource - The source of the color
  * @property {string} topColor - The top color of the gradient
  * @property {string} bottomColor - The bottom color of the gradient
+ * @property {number} [coverColorType] - The type of the cover color [0,??]
+ * @property {number} [startAlpha] - The start alpha of the gradient
+ * @property {number} [endAlpha] - The end alpha of the gradient
  * @property {'gradient'} type - The
  */
 

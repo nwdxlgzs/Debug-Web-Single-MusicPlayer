@@ -60,17 +60,22 @@ export function changeProgress(progress, currentTime) {
  * @param {[number,number,number]} color
  */
 export function setGradientBackgroundColor(color) {
+    // 更换元素 class
+
+    blurBackground.classList.remove('blur-background');
+    blurBackground.classList.add('gradient-background');
+
     // 设置为自定义 css 变量
     blurBackground.style.setProperty(
         '--start-gradient-color',
-        `rgba(${color[0]},${color[1]},${color[2]},0.5) ${window.attach.backgroundTypeData.startRange} `
+        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.backgroundTypeData.startAlpha ?? 0.5}) ${window.attach.backgroundTypeData.startRange ?? "25%"} `
     );
 
-    console.error(color);
+   
 
     blurBackground.style.setProperty(
         '--end-gradient-color',
-        `rgba(${color[0]},${color[1]},${color[2]},1) ${window.attach.backgroundTypeData.endRange} `
+        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.backgroundTypeData.endAlpha ?? 1}) ${window.attach.backgroundTypeData.endRange ?? "85%"} `
     );
 }
 
