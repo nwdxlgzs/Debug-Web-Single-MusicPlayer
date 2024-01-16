@@ -13,35 +13,67 @@ export function formatTime(time) {
 
 
 
+// export function create2DSmoothedArray(data2D, windowSize) {
+//     const rows = data2D.length;
+//     const cols = data2D[0].length;
+//     for (let i = 0; i < rows; i++) {
+//         for (let j = 0; j < cols; j++) {
+//             let sum = 0;
+//             let count = 0;
+//             for (
+//                 let di = -Math.floor(windowSize / 2);
+//                 di <= Math.floor(windowSize / 2);
+//                 di++
+//             ) {
+//                 for (
+//                     let dj = -Math.floor(windowSize / 2);
+//                     dj <= Math.floor(windowSize / 2);
+//                     dj++
+//                 ) {
+//                     // 计算环形索引
+//                     let rowIndex = (i + di + rows) % rows;
+//                     let colIndex = (j + dj + cols) % cols;
+
+//                     // 累加邻近值
+//                     sum += data2D[rowIndex][colIndex];
+//                     count++;
+//                 }
+//             }
+//             // 计算平均值并赋值给平滑数组
+//             data2D[i][j] = Math.round(sum / count);
+//         }
+//     }
+// }
+//目前的真神
 export function create2DSmoothedArray(data2D, windowSize) {
     const rows = data2D.length;
     const cols = data2D[0].length;
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
+    const Zhw = Math.floor(windowSize / 2);
+    const count = Math.pow(windowSize, 2);
+    // 使用变量跟踪边界值，以避免模运算
+    for (let i = 0; i < (rows > 6 ? rows / 2 : 3); i++) {
+        for (let j = 0; j < cols; j += 2) {//第一次只算偶数位
             let sum = 0;
-            let count = 0;
-            for (
-                let di = -Math.floor(windowSize / 2);
-                di <= Math.floor(windowSize / 2);
-                di++
-            ) {
-                for (
-                    let dj = -Math.floor(windowSize / 2);
-                    dj <= Math.floor(windowSize / 2);
-                    dj++
-                ) {
-                    // 计算环形索引
-                    let rowIndex = (i + di + rows) % rows;
-                    let colIndex = (j + dj + cols) % cols;
+            for (let di = -Zhw; di <= Zhw; di++) {
+                let rowIndex = i + di;
+                // 检查是否超出上下界限
+                if (rowIndex < 0) rowIndex += rows;
+                if (rowIndex >= rows) rowIndex -= rows;
 
-                    // 累加邻近值
+                for (let dj = -Zhw; dj <= Zhw; dj++) {
+                    let colIndex = j + dj;
+                    // 检查是否超出左右界限
+                    if (colIndex < 0) colIndex += cols;
+                    if (colIndex >= cols) colIndex -= cols;
                     sum += data2D[rowIndex][colIndex];
-                    count++;
                 }
             }
-            // 计算平均值并赋值给平滑数组
             data2D[i][j] = Math.round(sum / count);
         }
+    }
+    for (let j = 1; j < cols; j += 2) {//奇数位靠偶数位平滑
+        let sum = data2D[0][j - 1] + data2D[0][(j + 1) % cols];
+        data2D[0][j] = Math.round(sum / 2);
     }
 }
 
@@ -108,9 +140,9 @@ export class IntQueue {
         if (index < 0 || index >= this.buffer.length) {
             throw new Error(
                 'Index out of bounds : length = ' +
-                    this.buffer.length +
-                    ' index = ' +
-                    index
+                this.buffer.length +
+                ' index = ' +
+                index
             );
         }
         if (smoothWindowSize < 0) {

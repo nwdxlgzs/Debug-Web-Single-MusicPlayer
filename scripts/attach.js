@@ -19,11 +19,24 @@ function fetchWithTimeout(url, timeout = 2000) {
             });
     });
 }
+function escapeHtmlStr(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 
 const mid =
     new URLSearchParams(window.location.hash.substring(1)).get('mid') ||
     new URLSearchParams(window.location.search).get('mid') ||
     '0';
+const diff_demo =
+    new URLSearchParams(window.location.hash.substring(1)).get('diff_demo') ||
+    new URLSearchParams(window.location.search).get('diff_demo') ||
+    'null';
 let jsonURL = `${window.location.origin}/?api=playerInfoGet&mid=${mid}`;
 // 判断window.location.origin是不是XX.github.io，是就相对路径，不是就绝对路径
 if (window.location.origin.endsWith('.github.io')) {
@@ -41,19 +54,41 @@ fetchWithTimeout(jsonURL)
             //使用默认数据
             return {
                 backgroundImage: './images/background.png',
-                coverImage: './images/cover.jpg',
+                coverImage: './images/cover.png',
                 songTitle: 'Unkown Song',
                 artistName: 'Unkown Artist',
                 musicURL: './resources/sound',
                 mediaType: 'audio/mpeg',
-                lrcFile: './resources/sound_lrc', //null,
-                lrcExistLike: 'center', //中心center,隐藏hide,靠左left
+                lrcFile: null,
+                lrcExistLike: 'hide', //中心center,隐藏hide,靠左left
                 animationSTAN: 'circle', //圆周平移circle,无动画none,变长变短skew,左右倾斜stretch
             };
         }
         return response.json();
     })
     .then((data) => {
+        if (data["replace-attach-content-demo"] != undefined && data["replace-attach-content-demo"] != null &&
+            diff_demo !== null && diff_demo !== 'null' && diff_demo !== '' && diff_demo !== undefined) {
+            //Heartbeat|EmptyLove|IReallyLikeYou|提拉米苏
+            switch (diff_demo) {
+                case 'Heartbeat': {
+                    data = data["replace-attach-content-demo"][0];
+                    break;
+                }
+                case 'EmptyLove': {
+                    data = data["replace-attach-content-demo"][1];
+                    break;
+                }
+                case 'IReallyLikeYou': {
+                    data = data["replace-attach-content-demo"][2];
+                    break;
+                }
+                case '提拉米苏': {
+                    data = data["replace-attach-content-demo"][3];
+                    break;
+                }
+            }
+        }
         // 进行DOM更新或其他操作
         document.getElementById('blur-background').style.cssText = `
         background: url('${data.backgroundImage}') no-repeat center center;
@@ -82,12 +117,10 @@ fetchWithTimeout(jsonURL)
                     elements.forEach(function (element) {
                         let text = element.textContent;
                         let newHTML = '';
-                        // 拆分文本并为每个字符创建一个新的span
-                        for (let i = 0; i < text.length; i++) {
-                            newHTML +=
-                                '<span class="char-animation-target">' +
-                                text[i] +
-                                '</span>';
+                        const characters = Array.from(text);
+                        for (let character of characters) {
+                            character = escapeHtmlStr(character);
+                            newHTML += '<span class="char-animation-target">' + character + '</span>';
                         }
                         // 更新HTML
                         element.innerHTML = newHTML;
@@ -111,25 +144,17 @@ fetchWithTimeout(jsonURL)
                     elements.forEach(function (element) {
                         let text = element.textContent;
                         let newHTML = '';
-                        for (let i = 0; i < text.length; i++) {
-                            let charSpan =
-                                '<span class="char-animation-target">' +
-                                text[i] +
-                                '</span>';
-                            if (text[i].trim() !== '') {
-                                // 如果字符不是空白
-                                charSpan =
-                                    '<span class="char-animation-target skew-animation">' +
-                                    text[i] +
-                                    '</span>';
+                        const characters = Array.from(text);
+                        for (let character of characters) {
+                            character = escapeHtmlStr(character);
+                            if (character.trim() === '') {
+                                newHTML += '<span class="char-animation-target">' + character + '</span>';
+                            } else {
+                                newHTML += '<span class="char-animation-target skew-animation">' + character + '</span>';
                             }
-                            newHTML += charSpan;
                         }
                         element.innerHTML = newHTML;
                     });
-                    let chars = document.querySelectorAll(
-                        '.char-animation-target'
-                    );
                     break;
                 }
                 case 'stretch': {
@@ -137,19 +162,14 @@ fetchWithTimeout(jsonURL)
                     elements.forEach(function (element) {
                         let text = element.textContent;
                         let newHTML = '';
-                        for (let i = 0; i < text.length; i++) {
-                            let charSpan =
-                                '<span class="char-animation-target">' +
-                                text[i] +
-                                '</span>';
-                            if (text[i].trim() !== '') {
-                                // 如果字符不是空白
-                                charSpan =
-                                    '<span class="char-animation-target stretch-animation">' +
-                                    text[i] +
-                                    '</span>';
+                        const characters = Array.from(text);
+                        for (let character of characters) {
+                            character = escapeHtmlStr(character);
+                            if (character.trim() === '') {
+                                newHTML += '<span class="char-animation-target">' + character + '</span>';
+                            } else {
+                                newHTML += '<span class="char-animation-target stretch-animation">' + character + '</span>';
                             }
-                            newHTML += charSpan;
                         }
                         element.innerHTML = newHTML;
                     });
@@ -205,7 +225,7 @@ fetchWithTimeout(jsonURL)
                     document.getElementById('lyrics').textContent =
                         '点击播放即可使用lrc歌词数据';
                 })
-                .catch((error) => {});
+                .catch((error) => { });
         } else {
             // 解析LRC文本并创建数组
             lyricsArray = [{ time: 0, text: '暂无歌词' }];
@@ -261,4 +281,4 @@ fetchWithTimeout(jsonURL)
             }
         }
     })
-    .catch((error) => {});
+    .catch((error) => { });

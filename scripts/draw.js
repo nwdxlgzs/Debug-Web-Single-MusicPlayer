@@ -12,7 +12,7 @@ class SpectrumCanvasBubble {
         this.x = x;
         this.y = y;
         this.radius = 1;
-        this.maxRadius = Math.random() * 15 + 10; // 最大半径
+        this.maxRadius = Math.random() * 20 + 15; // 最大半径
         this.growFactor = Math.random() * 0.05 + 1; // 成长速度
         this.speedX = (Math.random() - 0.5) * 8;
         this.speedY = (Math.random() - 0.5) * 8;
@@ -63,6 +63,8 @@ class SpectrumCanvasBubble {
  * @param {HTMLCanvasElement} topSpectrumCanvas
  * @param {HTMLCanvasElement} bottomSpectrumCanvas
  */
+
+let lastDrawFPSDrawlogic = null;
 export function draw(
     analyser,
     spectrumCanvas,
@@ -96,7 +98,7 @@ export function draw(
         }
         try {
             MainColorForCover = quantize(pixelArray, 2).palette()[0];
-        } catch (e) {}
+        } catch (e) { }
     }
     const bufferLength = analyser.frequencyBinCount;
     let spectrum_Seq = [];
@@ -129,7 +131,7 @@ export function draw(
     let lastTime = 0;
 
     const FPSDrawlogic = (time) => {
-        requestAnimationFrame(FPSDrawlogic);
+        lastDrawFPSDrawlogic = requestAnimationFrame(FPSDrawlogic);
         NEXT_spectrum_Seq();
         analyser.getByteFrequencyData(spectrum_Seq[0]);
         history_Seq_averages.push(
@@ -202,9 +204,9 @@ export function draw(
                     const angle =
                         ((Math.PI * 2) / maxSampleSize) * i -
                         0.00005 *
-                            (lay_i + 1) *
-                            Math.PI *
-                            (lastTime % (2000 / 0.0002));
+                        (lay_i + 1) *
+                        Math.PI *
+                        (lastTime % (2000 / 0.0002));
                     const x = centerX + height * Math.cos(angle);
                     const y = centerY + height * Math.sin(angle);
                     if (i === 0) {
@@ -229,9 +231,8 @@ export function draw(
                     }
                 }
                 canvasCtx.closePath();
-                canvasCtx.fillStyle = `rgba(${MainColorForCover[0]},${
-                    MainColorForCover[1]
-                },${MainColorForCover[2]},${0.8 / Layers})`;
+                canvasCtx.fillStyle = `rgba(${MainColorForCover[0]},${MainColorForCover[1]
+                    },${MainColorForCover[2]},${0.8 / Layers})`;
                 // canvasCtx.fillStyle = `rgba(255,255,255,${0.8 / Layers})`;
                 canvasCtx.fill();
                 // 绘制边缘线
@@ -248,9 +249,9 @@ export function draw(
                     const angle =
                         ((Math.PI * 2) / maxSampleSize) * i -
                         0.00005 *
-                            (lay_i + 1) *
-                            Math.PI *
-                            (lastTime % (2000 / 0.0002));
+                        (lay_i + 1) *
+                        Math.PI *
+                        (lastTime % (2000 / 0.0002));
                     const x = centerX + height * Math.cos(angle);
                     const y = centerY + height * Math.sin(angle);
                     if (i === 0) {
@@ -287,9 +288,8 @@ export function draw(
             const average = sum_smoothaverage / sampledDataArray.length;
             const scale = 1 + average / 600;
             // coverImage.style.transform = `rotate(${(lastTime / 30000 * 360) % 360}deg)`;
-            coverImage.style.transform = `scale(${scale}) rotate(${
-                ((lastTime / 30000) * 360) % 360
-            }deg)`;
+            coverImage.style.transform = `scale(${scale}) rotate(${((lastTime / 30000) * 360) % 360
+                }deg)`;
             coverImageContainer.style.height = `${scale * 35}vh`;
             coverImageContainer.style.width = `${scale * 35}vh`;
         }
@@ -320,9 +320,8 @@ export function draw(
                 // 画一个圆：arc(x, y, radius, startAngle, endAngle)
                 canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
                 // 设置圆点的颜色
-                canvasCtx.fillStyle = `rgba(255, 255, 255, ${
-                    (dataArray[i] + 10) / (255 + 10)
-                })`;
+                canvasCtx.fillStyle = `rgba(255, 255, 255, ${(dataArray[i] + 10) / (255 + 10)
+                    })`;
                 // 填充圆点
                 canvasCtx.fill();
                 x += 2 * radius + 1;
@@ -370,6 +369,8 @@ export function draw(
             canvasCtx.stroke();
         }
     }
-
+    if (lastDrawFPSDrawlogic != null) {
+        cancelAnimationFrame(lastDrawFPSDrawlogic);
+    }
     FPSDrawlogic();
 }
