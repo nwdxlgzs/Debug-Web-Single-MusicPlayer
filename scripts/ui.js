@@ -33,8 +33,8 @@ export function changeProgress(progress, currentTime) {
     timeElapsed.textContent = formatTime(currentTime);
     let currentLyricIndex = 0;
 
-    for (let i = 0; i < lyricsArray.length; i++) {
-        if (currentTime >= lyricsArray[i].time) {
+    for (let i = 0; i < window.attach.lyricsArray.length; i++) {
+        if (currentTime >= window.attach.lyricsArray[i].time) {
             currentLyricIndex = i;
         }
     }
