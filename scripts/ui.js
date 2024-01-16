@@ -40,7 +40,7 @@ export function changeProgress(progress, currentTime) {
     }
 
     if (currentLyricIndex != lastLyricIndex) {
-        const text = lyricsArray[currentLyricIndex].text;
+        const text = window.attach.lyricsArray[currentLyricIndex].text;
         lyricsElement.classList.remove('lyrics-active');
         // lyricsElement.textContent = lyricsArray[currentLyricIndex].text;
         setTimeout(() => {

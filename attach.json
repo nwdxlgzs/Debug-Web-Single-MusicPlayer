@@ -8,6 +8,7 @@
     "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
     "lrcExistLike": "left",
     "animationSTAN": "stretch",
+    "BGfilterBlurPx": 0,
     "replace-attach-content-demo": [
         {
             "backgroundImage": "./resources/Cloudier-Heartbeat-background.png",
@@ -18,7 +19,8 @@
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/Cloudier-Heartbeat.lrc",
             "lrcExistLike": "left",
-            "animationSTAN": "circle"
+            "animationSTAN": "circle",
+            "BGfilterBlurPx": 10
         },
         {
             "backgroundImage": "./resources/Lulleaux-Empty Love-background.png",
@@ -29,7 +31,8 @@
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
             "lrcExistLike": "center",
-            "animationSTAN": "stretch"
+            "animationSTAN": "stretch",
+            "BGfilterBlurPx": 20
         },
         {
             "backgroundImage": "./resources/Carly Rae Jepsen-I Really Like You-background.png",
@@ -40,7 +43,8 @@
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/Carly Rae Jepsen-I Really Like You.lrc",
             "lrcExistLike": "left",
-            "animationSTAN": "skew"
+            "animationSTAN": "skew",
+            "BGfilterBlurPx": 15
         },
         {
             "backgroundImage": "./resources/新乐尘符-提拉米苏-background.png",
@@ -51,7 +55,8 @@
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/新乐尘符-提拉米苏.lrc",
             "lrcExistLike": "center",
-            "animationSTAN": "circle"
+            "animationSTAN": "circle",
+            "BGfilterBlurPx": 5
         }
     ]
 }

@@ -1,6 +1,4 @@
-var SHARE_SINGLE_DOWNLOAD_URL = null;
-var MEDIA_SOURCE_BUFFER_TYPE = null;
-var lyricsArray = null;
+window.attach = {};//window全局变量
 function fetchWithTimeout(url, timeout = 2000) {
     return new Promise((resolve, reject) => {
         // 设置超时定时器
@@ -62,6 +60,7 @@ fetchWithTimeout(jsonURL)
                 lrcFile: null,
                 lrcExistLike: 'hide', //中心center,隐藏hide,靠左left
                 animationSTAN: 'circle', //圆周平移circle,无动画none,变长变短skew,左右倾斜stretch
+                BGfilterBlurPx: 10,
             };
         }
         return response.json();
@@ -93,14 +92,15 @@ fetchWithTimeout(jsonURL)
         document.getElementById('blur-background').style.cssText = `
         background: url('${data.backgroundImage}') no-repeat center center;
         background-size: cover;
+        filter: blur(${data.BGfilterBlurPx}px);
       `;
         document.getElementById('cover-image').src = data.coverImage;
         document.getElementById('song-title').textContent = `${data.songTitle}`;
         document.getElementById(
             'artist-name'
         ).textContent = `${data.artistName}`;
-        MEDIA_SOURCE_BUFFER_TYPE = data.mediaType;
-        SHARE_SINGLE_DOWNLOAD_URL = data.musicURL;
+        window.attach.MEDIA_SOURCE_BUFFER_TYPE = data.mediaType;
+        window.attach.SHARE_SINGLE_DOWNLOAD_URL = data.musicURL;
         if (
             data.animationSTAN !== undefined &&
             data.animationSTAN !== null &&
@@ -204,7 +204,7 @@ fetchWithTimeout(jsonURL)
                     LRC_TEXT = LRC_TEXT.trim();
                     const timeReg = /\[(\d+):(\d+\.\d+)\]/;
                     const lines = LRC_TEXT.split(/\r\n|\n/); // 处理不同的换行符
-                    lyricsArray = [];
+                    window.attach.lyricsArray = [];
                     lines.forEach((line) => {
                         const match = timeReg.exec(line);
                         if (match) {
@@ -215,11 +215,11 @@ fetchWithTimeout(jsonURL)
                             // 提取歌词部分
                             const text = line.replace(timeReg, '').trim();
                             // 添加到结果数组
-                            lyricsArray.push({ time, text });
+                            window.attach.lyricsArray.push({ time, text });
                         }
                     });
                     // 按时间排序
-                    lyricsArray.sort((a, b) => {
+                    window.attach.lyricsArray.sort((a, b) => {
                         return a.time - b.time;
                     });
                     document.getElementById('lyrics').textContent =
@@ -228,7 +228,7 @@ fetchWithTimeout(jsonURL)
                 .catch((error) => { });
         } else {
             // 解析LRC文本并创建数组
-            lyricsArray = [{ time: 0, text: '暂无歌词' }];
+            window.attach.lyricsArray = [{ time: 0, text: '暂无歌词' }];
             document.getElementById('lyrics').textContent =
                 '点击播放即可使用lrc歌词数据';
         }

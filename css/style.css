@@ -7,16 +7,14 @@ html {
 }
 
 
-.blur-background {
+/* .blur-background {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: -1;
-    /* -webkit-backdrop-filter: blur(20px); */
-    /* backdrop-filter: blur(20px); */
-    filter: blur(20px);
+    filter: blur(5px);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -31,8 +29,31 @@ html {
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.1);
     z-index: -1;
+} */
+.blur-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    filter: blur(5px);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
+.blur-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: black;
+    -webkit-mask-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 100%);
+}
 .spectrum-cover-container {
     position: relative;
     /* width: 50%; */
@@ -334,7 +355,7 @@ html {
 
 .lyrics {
     display: inline-block;
-    font-size: 1.5em;
+    font-size: 1.3em;
     color: #fff;
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
