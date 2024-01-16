@@ -143,13 +143,11 @@ document.addEventListener('click', function (event) {
 
 //歌词显隐性（lrcExistLike设置hide时这个按钮也隐藏）
 lyricsShowButton.addEventListener('click', function () {
-    const lyricsContainerContainer = document.querySelector(
-        '.lyrics-container'
-    );
+    const lyricsContainer = document.getElementById('lyrics-container');
     if (this.classList.toggle('with-line')) {
-        lyricsContainerContainer.style.display = 'none';
+        lyricsContainer.style.display = 'none';
     } else {
-        lyricsContainerContainer.style.display = 'block';
+        lyricsContainer.style.display = 'inline-block';
     }
 });
 

@@ -237,10 +237,7 @@ fetchWithTimeout(jsonURL)
             data.lrcExistLike !== null &&
             data.lrcExistLike !== ''
         ) {
-            // <div class="lyrics-container-container">
-            const lyricsContainerContainer = document.querySelector(
-                '.lyrics-container-container'
-            );
+            const lyricsContainerContainer = document.getElementById('lyrics-container-container');
             switch (data.lrcExistLike) {
                 case 'center': {
                     if (
