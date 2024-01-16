@@ -4,6 +4,7 @@ import {
     sliceUint8ArrayVertically,
     IntQueue,
 } from './utils.js';
+import * as ui from './ui.js';
 import { quantize } from './quantize.js';
 
 class SpectrumCanvasBubble {
@@ -97,9 +98,21 @@ export function draw(
             }
         }
         try {
-            MainColorForCover = quantize(pixelArray, 2).palette()[0];
-        } catch (e) { }
+            const palettes = quantize(pixelArray, 2).palette();
+
+            MainColorForCover = palettes[0];
+
+            if (
+                window.attach.backgroundTypeData.type === 'gradient' &&
+                window.attach.backgroundTypeData.colorSource === 'cover'
+            ) {
+                ui.setGradientBackgroundColor(
+                    palettes[2] ?? palettes[1] ?? palettes[0]
+                );
+            }
+        } catch (e) {}
     }
+
     const bufferLength = analyser.frequencyBinCount;
     let spectrum_Seq = [];
     for (let i = 0; i < 8; i++) {
@@ -204,9 +217,9 @@ export function draw(
                     const angle =
                         ((Math.PI * 2) / maxSampleSize) * i -
                         0.00005 *
-                        (lay_i + 1) *
-                        Math.PI *
-                        (lastTime % (2000 / 0.0002));
+                            (lay_i + 1) *
+                            Math.PI *
+                            (lastTime % (2000 / 0.0002));
                     const x = centerX + height * Math.cos(angle);
                     const y = centerY + height * Math.sin(angle);
                     if (i === 0) {
@@ -231,8 +244,9 @@ export function draw(
                     }
                 }
                 canvasCtx.closePath();
-                canvasCtx.fillStyle = `rgba(${MainColorForCover[0]},${MainColorForCover[1]
-                    },${MainColorForCover[2]},${0.8 / Layers})`;
+                canvasCtx.fillStyle = `rgba(${MainColorForCover[0]},${
+                    MainColorForCover[1]
+                },${MainColorForCover[2]},${0.8 / Layers})`;
                 // canvasCtx.fillStyle = `rgba(255,255,255,${0.8 / Layers})`;
                 canvasCtx.fill();
                 // 绘制边缘线
@@ -249,9 +263,9 @@ export function draw(
                     const angle =
                         ((Math.PI * 2) / maxSampleSize) * i -
                         0.00005 *
-                        (lay_i + 1) *
-                        Math.PI *
-                        (lastTime % (2000 / 0.0002));
+                            (lay_i + 1) *
+                            Math.PI *
+                            (lastTime % (2000 / 0.0002));
                     const x = centerX + height * Math.cos(angle);
                     const y = centerY + height * Math.sin(angle);
                     if (i === 0) {
@@ -288,8 +302,9 @@ export function draw(
             const average = sum_smoothaverage / sampledDataArray.length;
             const scale = 1 + average / 600;
             // coverImage.style.transform = `rotate(${(lastTime / 30000 * 360) % 360}deg)`;
-            coverImage.style.transform = `scale(${scale}) rotate(${((lastTime / 30000) * 360) % 360
-                }deg)`;
+            coverImage.style.transform = `scale(${scale}) rotate(${
+                ((lastTime / 30000) * 360) % 360
+            }deg)`;
             coverImageContainer.style.height = `${scale * 35}vh`;
             coverImageContainer.style.width = `${scale * 35}vh`;
         }
@@ -320,8 +335,9 @@ export function draw(
                 // 画一个圆：arc(x, y, radius, startAngle, endAngle)
                 canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
                 // 设置圆点的颜色
-                canvasCtx.fillStyle = `rgba(255, 255, 255, ${(dataArray[i] + 10) / (255 + 10)
-                    })`;
+                canvasCtx.fillStyle = `rgba(255, 255, 255, ${
+                    (dataArray[i] + 10) / (255 + 10)
+                })`;
                 // 填充圆点
                 canvasCtx.fill();
                 x += 2 * radius + 1;
