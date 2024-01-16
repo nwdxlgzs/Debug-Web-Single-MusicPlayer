@@ -59,15 +59,13 @@ ui.listenPlayButtonClick(async () => {
     if (!player.init) {
         initAudioPlayer();
     }
-
+    ui.changePlayButtonStatus(player.paused);
     if (player.paused) {
         player.play();
         startVisualizer();
     } else {
         player.pause();
     }
-
-    ui.changePlayButtonStatus(!player.paused);
 });
 
 // 进度控制事件
