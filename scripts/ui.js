@@ -8,12 +8,12 @@ const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
 const volumeControlContainer = document.getElementById('volume-control-container');
 const lyricsElement = document.getElementById('lyrics');
+const lyricsShowButton = document.getElementById('lyrics-show');
+const likeThisButton = document.getElementById('like-this');
 
 let isSlideProgress = false;
 
 let lastLyricIndex = -1;
-
-let currentSongProgress = -1;
 
 /**
  *
@@ -139,4 +139,25 @@ document.addEventListener('click', function (event) {
         volumeControlContainer.classList.remove('volume-control-container__opened')
     }
 
+});
+
+//歌词显隐性（lrcExistLike设置hide时这个按钮也隐藏）
+lyricsShowButton.addEventListener('click', function () {
+    const lyricsContainerContainer = document.querySelector(
+        '.lyrics-container'
+    );
+    if (this.classList.toggle('with-line')) {
+        lyricsContainerContainer.style.display = 'none';
+    } else {
+        lyricsContainerContainer.style.display = 'block';
+    }
+});
+
+//喜欢按钮
+likeThisButton.addEventListener('click', function () {
+    if (this.classList.toggle('like-this-btn-active')) {
+        //
+    } else {
+        //
+    }
 });

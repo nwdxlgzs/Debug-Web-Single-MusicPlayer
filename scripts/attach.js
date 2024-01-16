@@ -261,6 +261,9 @@ fetchWithTimeout(jsonURL)
                     lyricsContainerContainer.style.cssText = `
                     display: none;
                     `;
+                    const lyricsShowBtn = document.getElementById("lyrics-show");
+                    lyricsShowBtn.classList.remove('with-line');
+                    lyricsShowBtn.style.display = 'none';
                     break;
                 }
                 case 'left': {

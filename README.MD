@@ -36,7 +36,7 @@ python -m http.server
 |    musicURL     |                                       音频文件路径                                        |
 |    mediaType    |                             音频文件类型（一般填audio/mpeg）                              |
 |     lrcFile     |                                 歌词文件路径（只支持lrc）                                 |
-|  lrcExistLike   |                       歌词存在风格（中心center,隐藏hide,靠左left）                        |
+|  lrcExistLike   |               歌词存在风格（中心center,隐藏hide同时隐藏歌词按钮,靠左left）                |
 |  animationSTAN  | 歌曲标题&艺术家名称文字动画风格（圆周平移circle,无动画none,变长变短skew,左右倾斜stretch） |
 | BGfilterBlurPx  |                                 背景图片进行模糊时的px值                                  |
 
