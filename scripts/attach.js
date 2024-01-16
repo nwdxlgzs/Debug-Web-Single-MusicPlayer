@@ -27,12 +27,14 @@ function fetchWithTimeout(url, timeout = 2000) {
     });
 }
 function escapeHtmlStr(unsafe) {
+    //转义html字符包括空格
     return unsafe
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/'/g, "&#039;")
+        .replace(/\s/g, "&nbsp;");
 }
 
 
