@@ -181,6 +181,7 @@ html {
 }
 
 .lyrics-show-btn {
+    margin-bottom: 2px;
     background-image: url('../images/lyrics.svg');
     background-size: cover;
     background-color: transparent;
@@ -210,6 +211,7 @@ html {
 }
 
 .like-this-btn {
+    margin-bottom: 2px;
     background-image: url('../images/unlike.svg');
     background-size: cover;
     background-color: transparent;
@@ -266,10 +268,7 @@ html {
     border: none;
     cursor: pointer;
     filter: brightness(100) saturate(100%);
-
 }
-
-
 
 /* Canvas和封面的容器 */
 .spectrum-cover-container {
@@ -353,8 +352,9 @@ html {
     z-index: 2;
     text-align: center;
     align-items: center;
-    flex-basis: auto;
+
     width: 50%;
+    margin-right: 20px;
 }
 
 .lyrics-container::-webkit-scrollbar {
