@@ -27,7 +27,7 @@ class AudioPlayer {
      */
     init = false;
 
-    constructor() {}
+    constructor() { }
 
     /**
      *
@@ -36,6 +36,10 @@ class AudioPlayer {
     create(src = null) {
         this.mediaSource = new MediaSource();
         this.audio = new Audio();
+        if (this.pre_volume != null && this.pre_volume != undefined) {
+            this.audio.volume = this.pre_volume;
+            this.pre_volume = null;
+        }
         this.audio.src = src ?? URL.createObjectURL(this.mediaSource);
 
         this.audio.addEventListener('durationchange', () => {
@@ -95,6 +99,9 @@ class AudioPlayer {
             // console.warn('Invalid duration', duration);
             return;
         }
+        if (this.audio == undefined || this.audio == null) {
+            return;
+        }
         this.audio.currentTime = duration;
     }
 
@@ -111,10 +118,17 @@ class AudioPlayer {
             // console.warn('Invalid volume', duration);
             return;
         }
+        if (this.audio == undefined || this.audio == null) {
+            this.pre_volume = volume;
+            return;
+        }
         this.audio.volume = volume;
     }
 
     get volume() {
+        if (this.audio == undefined || this.audio == null) {
+            return this.pre_volume;
+        }
         return this.audio.volume;
     }
 
@@ -123,6 +137,9 @@ class AudioPlayer {
     }
 
     get duration() {
+        if (this.audio == undefined || this.audio == null) {
+            return 0;
+        }
         return this.audio.duration;
     }
 
