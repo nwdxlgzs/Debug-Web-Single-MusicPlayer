@@ -85,6 +85,9 @@ export function listenPlayButtonClick(func) {
  * @param {number} duration
  */
 export function setTotalDuration(duration) {
+    if (duration == null || duration == undefined || duration == Infinity || isNaN(duration) || duration < 0) {
+        return;
+    }
     totalDuration.textContent = formatTime(duration);
 }
 

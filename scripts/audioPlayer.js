@@ -45,6 +45,10 @@ class AudioPlayer {
         this.audio.addEventListener('durationchange', () => {
             if (this.audio.duration !== Infinity) {
                 this.audio.onloadedmetadata();
+                if (this.pre_currentTime != null && this.pre_currentTime != undefined) {
+                    this.audio.currentTime = this.audio.duration * (this.pre_currentTime / 100);
+                    this.pre_currentTime = null;
+                }
             }
         });
 
@@ -70,7 +74,6 @@ class AudioPlayer {
                     const { done, value } = await reader.read();
                     if (done) {
                         mediaSource.endOfStream();
-
                         // audio.play(); // 当音频数据加载完毕后播放
                         return;
                     }
@@ -100,6 +103,7 @@ class AudioPlayer {
             return;
         }
         if (this.audio == undefined || this.audio == null) {
+            this.pre_currentTime = -duration;//duration是负数，见get duration()
             return;
         }
         this.audio.currentTime = duration;
@@ -138,7 +142,7 @@ class AudioPlayer {
 
     get duration() {
         if (this.audio == undefined || this.audio == null) {
-            return 0;
+            return -100;//负数duration方便保留百分比(player.currentTime = player.duration * (progress / 100);)
         }
         return this.audio.duration;
     }
@@ -173,6 +177,7 @@ class AudioPlayer {
         }
         this.analyser.connect(this.audioContext.destination);
         this.audio.play();
+
     }
 }
 

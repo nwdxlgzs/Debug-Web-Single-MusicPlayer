@@ -1,5 +1,5 @@
-let SHARE_SINGLE_DOWNLOAD_URL = null;
-let MEDIA_SOURCE_BUFFER_TYPE = null;
+var SHARE_SINGLE_DOWNLOAD_URL = null;
+var MEDIA_SOURCE_BUFFER_TYPE = null;
 var lyricsArray = null;
 function fetchWithTimeout(url, timeout = 2000) {
     return new Promise((resolve, reject) => {
