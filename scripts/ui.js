@@ -1,4 +1,4 @@
-import { formatTime } from './utils.js';
+import { formatTime, makeDarker } from './utils.js';
 
 const playPauseButton = document.getElementById('playPause');
 const songProgress = document.getElementById('song-progress');
@@ -60,6 +60,7 @@ export function changeProgress(progress, currentTime) {
  * @param {[number,number,number]} color
  */
 export function setGradientBackgroundColor(color) {
+    color = makeDarker(color, 30);
     // 更换元素 class
 
     blurBackground.classList.remove('blur-background');
@@ -68,14 +69,11 @@ export function setGradientBackgroundColor(color) {
     // 设置为自定义 css 变量
     blurBackground.style.setProperty(
         '--start-gradient-color',
-        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.backgroundTypeData.startAlpha ?? 0.5}) ${window.attach.backgroundTypeData.startRange ?? "25%"} `
+        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.recvData.BGGradientConfig.alphas[0] ?? 0.5}) ${window.attach.recvData.BGGradientConfig.ranges[0] ?? 25}% `
     );
-
-   
-
     blurBackground.style.setProperty(
         '--end-gradient-color',
-        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.backgroundTypeData.endAlpha ?? 1}) ${window.attach.backgroundTypeData.endRange ?? "85%"} `
+        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.recvData.BGGradientConfig.alphas[1] ?? 1}) ${window.attach.recvData.BGGradientConfig.ranges[1] ?? 85}% `
     );
 }
 

@@ -8,19 +8,8 @@
     "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
     "lrcExistLike": "left",
     "animationSTAN": "stretch",
-    "backgroundType": "gradient",
-    "backgroundTypeData": {
-        "type": "gradient",
-        "startRange": "25%",
-        "endRange": "85%",
-        "colorSource": "cover",
-        "topColor": "rgba(0, 0, 0, 0.5)",
-        "bottomColor": "rgba(0,0,0, 1)",
-        "startAlpha": 0.3,
-        "endAlpha": 0.95,
-        "coverColorType": 2
-    },
-    "BGfilterBlurPx": 0,
+    "like": true,
+    "BGMusicScale": 0.1,
     "replace-attach-content-demo": [
         {
             "backgroundImage": "./resources/Cloudier-Heartbeat-background.png",
@@ -31,8 +20,7 @@
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/Cloudier-Heartbeat.lrc",
             "lrcExistLike": "left",
-            "animationSTAN": "circle",
-            "BGfilterBlurPx": 10
+            "animationSTAN": "circle"
         },
         {
             "backgroundImage": "./resources/Lulleaux-Empty Love-background.png",
@@ -42,9 +30,7 @@
             "musicURL": "./resources/Lulleaux-Empty Love.mp3",
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
-            "lrcExistLike": "center",
-            "animationSTAN": "stretch",
-            "BGfilterBlurPx": 20
+            "lrcExistLike": "center"
         },
         {
             "backgroundImage": "./resources/Carly Rae Jepsen-I Really Like You-background.png",
@@ -55,8 +41,7 @@
             "mediaType": "audio/mpeg",
             "lrcFile": "./resources/Carly Rae Jepsen-I Really Like You.lrc",
             "lrcExistLike": "left",
-            "animationSTAN": "skew",
-            "BGfilterBlurPx": 15
+            "animationSTAN": "skew"
         },
         {
             "backgroundImage": "./resources/新乐尘符-提拉米苏-background.png",

@@ -7,6 +7,40 @@ window.attach.decrypt = async function (buff) {
     }
     return buff;
 };
+window.attach.MainColorForCover = [255, 255, 255];
+window.attach.DEFAULT_JSON = {
+    backgroundImage: './images/background.png',
+    coverImage: './images/cover.png',
+    songTitle: 'Unkown Song',
+    artistName: 'Unkown Artist',
+    musicURL: './resources/sound',
+    mediaType: 'audio/mpeg',
+    backgroundType: 'gradient',//blur使BGfilterBlurPx有效|gradient使BGGradientConfig有效
+    BGfilterBlurPx: 10,//像素大小
+    lrcFile: null,//null时无文件
+    lrcExistLike: 'hide',//hide隐藏并且一并隐藏歌词按钮哪怕lrcFile有效，left靠左，center居中
+    animationSTAN: 'circle',//circle圆周平移，stretch左右倾斜，skew变长变短，none无动画
+    BGGradientConfig: {
+        colorSource: "cover",
+        // cover使用封面，另一种直接设置颜色的方案，设置后coverThemeIndex无效
+        // colorSource: [
+        //     "rgba(0,0,0,0.1)",
+        //     "rgba(0,0,0, 0.5)"
+        // ],
+        alphas: [
+            0.1,
+            0.5
+        ],
+        ranges: [
+            25,
+            80
+        ],
+        coverThemeIndex: 0
+    },
+    like: true,//是否默认勾选喜欢
+    BGMusicScale: 0,//背景和音频缩放参数，0为不缩放，推荐0.05
+};
+
 
 function fetchWithTimeout(url, timeout = 2000) {
     return new Promise((resolve, reject) => {
@@ -56,88 +90,112 @@ if (window.location.origin.endsWith('.github.io')) {
     jsonURL = `${window.location.origin}/attach.json#mid=${mid}`;
 }
 
+function fillDefault(data, key, default_data) {
+    if (!data.hasOwnProperty(key) || data[key] === undefined || data[key] === null) {
+        data[key] = default_data[key];
+    }
+}
+
 fetchWithTimeout(jsonURL)
     .then((response) => {
         if (!response.ok) {
             //使用默认数据
-            return {
-                backgroundImage: './images/background.png',
-                coverImage: './images/cover.png',
-                songTitle: 'Unkown Song',
-                artistName: 'Unkown Artist',
-                musicURL: './resources/sound',
-                mediaType: 'audio/mpeg',
-                backgroundType: 'blur',
-                lrcFile: null,
-                lrcExistLike: 'hide', //中心center,隐藏hide,靠左left
-                animationSTAN: 'circle', //圆周平移circle,无动画none,变长变短skew,左右倾斜stretch
-                BGfilterBlurPx: 10,
-            };
+            return window.attach.DEFAULT_JSON;
         }
         return response.json();
     })
-    .then(
-        /**
-         *
-         * @param {AttachData<BackgroundType>} data
-         */
-        (data) => {
-            if (
-                data['replace-attach-content-demo'] != undefined &&
-                data['replace-attach-content-demo'] != null &&
-                diff_demo !== null &&
-                diff_demo !== 'null' &&
-                diff_demo !== '' &&
-                diff_demo !== undefined
-            ) {
-                //Heartbeat|EmptyLove|IReallyLikeYou|提拉米苏
-                switch (diff_demo) {
-                    case 'Heartbeat': {
-                        data = data['replace-attach-content-demo'][0];
-                        break;
-                    }
-                    case 'EmptyLove': {
-                        data = data['replace-attach-content-demo'][1];
-                        break;
-                    }
-                    case 'IReallyLikeYou': {
-                        data = data['replace-attach-content-demo'][2];
-                        break;
-                    }
-                    case '提拉米苏': {
-                        data = data['replace-attach-content-demo'][3];
-                        break;
-                    }
+    .then((data) => {
+        //通过diff_demo切换不同的演示歌曲，这里做一次适配
+        if (
+            data['replace-attach-content-demo'] != undefined &&
+            data['replace-attach-content-demo'] != null &&
+            diff_demo !== null &&
+            diff_demo !== 'null' &&
+            diff_demo !== '' &&
+            diff_demo !== undefined
+        ) {
+            //Heartbeat|EmptyLove|IReallyLikeYou|提拉米苏
+            switch (diff_demo) {
+                case 'Heartbeat': {
+                    data = data['replace-attach-content-demo'][0];
+                    break;
+                }
+                case 'EmptyLove': {
+                    data = data['replace-attach-content-demo'][1];
+                    break;
+                }
+                case 'IReallyLikeYou': {
+                    data = data['replace-attach-content-demo'][2];
+                    break;
+                }
+                case '提拉米苏': {
+                    data = data['replace-attach-content-demo'][3];
+                    break;
                 }
             }
-
-            // 更新网页属性
-            document.getElementById('cover-image').src = data.coverImage;
-            document.getElementById(
-                'song-title'
-            ).textContent = `${data.songTitle}`;
-            document.getElementById(
-                'artist-name'
-            ).textContent = `${data.artistName}`;
+        }
+        //修正补全缺省的值
+        const default_data = window.attach.DEFAULT_JSON;
+        const default_dataBGGradientConfig = default_data.BGGradientConfig;
+        fillDefault(data, 'backgroundImage', default_data);
+        fillDefault(data, 'coverImage', default_data);
+        fillDefault(data, 'backgroundType', default_data);
+        fillDefault(data, 'BGGradientConfig', default_data);
+        fillDefault(data, 'songTitle', default_data);
+        fillDefault(data, 'artistName', default_data);
+        if (data.lrcFile == undefined || data.lrcFile == null) {
+            fillDefault(data, 'lrcExistLike', default_data);
+        } else {
+            fillDefault(data, 'lrcExistLike', { lrcExistLike: 'left' });
+        }
+        fillDefault(data, 'animationSTAN', default_data);
+        fillDefault(data, 'BGfilterBlurPx', default_data);
+        fillDefault(data, 'like', default_data);
+        fillDefault(data, 'BGMusicScale', default_data);
+        const BGGradientConfig = data.BGGradientConfig;
+        fillDefault(BGGradientConfig, 'alphas', default_dataBGGradientConfig);
+        fillDefault(BGGradientConfig, 'ranges', default_dataBGGradientConfig);
+        fillDefault(BGGradientConfig, 'colorSource', default_dataBGGradientConfig);
+        fillDefault(BGGradientConfig, 'coverThemeIndex', default_dataBGGradientConfig);
+        return data;
+    }).then(
+        (data) => {
+            /**
+             *
+             * @param {AttachData<BackgroundType>} data
+             */
+            // recvData接收选中的json
+            window.attach.recvData = data;
             window.attach.MEDIA_SOURCE_BUFFER_TYPE = data.mediaType;
             window.attach.SHARE_SINGLE_DOWNLOAD_URL = data.musicURL;
+            window.attach.COVER_IMAGE_URL = data.coverImage;
+            window.attach.BACKGROUND_IMAGE_URL = data.backgroundImage;
+            // 更新网页属性
+
+            document.getElementById('song-title').textContent = `${data.songTitle}`;
+            document.getElementById('artist-name').textContent = `${data.artistName}`;
+
+            const likeThisButton = document.getElementById('like-this');
+            if (data.like && !likeThisButton.classList.contains("like-this-btn-active")) {
+                likeThisButton.classList.add('like-this-btn-active');
+            }
 
             const blurBackground = document.getElementById('blur-background');
             // 背景类型
             if (data.backgroundType === 'blur') {
                 blurBackground.style.cssText = `
-            background: url('${data.backgroundImage}') no-repeat center center;
+            background: url('${window.attach.BACKGROUND_IMAGE_URL}') no-repeat center center;
             background-size: cover;
             filter: blur(${data.BGfilterBlurPx}px);
           `;
             } else if (data.backgroundType === 'gradient') {
                 blurBackground.style.cssText = `
-                background: url('${data.backgroundImage}') no-repeat center center;
+                background: url('${window.attach.BACKGROUND_IMAGE_URL}') no-repeat center center;
                 background-size: cover;
               `;
 
                 // 如果为自定义颜色
-                if (data.backgroundTypeData.colorSource === 'custom') {
+                if (Array.isArray(data.BGGradientConfig["colorSource"])) {
                     // 在未确定修改之前不要更换 class
                     blurBackground.classList.remove('blur-background');
                     blurBackground.classList.add('gradient-background');
@@ -145,16 +203,14 @@ fetchWithTimeout(jsonURL)
                     // 设置为自定义 css 变量
                     blurBackground.style.setProperty(
                         '--start-gradient-color',
-                        `${data.backgroundTypeData.topColor} ${data.backgroundTypeData.startRange} `
+                        `${data.BGGradientConfig.colorSource[0]} ${data.BGGradientConfig.ranges[0]}% `
                     );
 
                     blurBackground.style.setProperty(
                         '--end-gradient-color',
-                        `${data.backgroundTypeData.bottomColor} ${data.backgroundTypeData.endRange} `
+                        `${data.BGGradientConfig.colorSource[1]} ${data.BGGradientConfig.ranges[1]}% `
                     );
                 }
-
-                window.attach.backgroundTypeData = data.backgroundTypeData;
             }
 
             if (
@@ -299,7 +355,7 @@ fetchWithTimeout(jsonURL)
                         document.getElementById('lyrics').textContent =
                             '点击播放即可使用lrc歌词数据';
                     })
-                    .catch((error) => {});
+                    .catch((error) => { });
             } else {
                 // 解析LRC文本并创建数组
                 window.attach.lyricsArray = [{ time: 0, text: '暂无歌词' }];
@@ -359,23 +415,10 @@ fetchWithTimeout(jsonURL)
             }
         }
     )
-    .catch((error) => {});
+    .catch((error) => { });
 
 /**
  * @typedef {'blur' | 'gradient'} BackgroundType
- */
-
-/**
- * @typedef {Object} BackgroundGradientData
- * @property {string} startRange - The start range of the gradient
- * @property {string} endRange - The end range of the gradient
- * @property {string} colorSource - The source of the color
- * @property {string} topColor - The top color of the gradient
- * @property {string} bottomColor - The bottom color of the gradient
- * @property {number} [coverColorType] - The type of the cover color [0,??]
- * @property {number} [startAlpha] - The start alpha of the gradient
- * @property {number} [endAlpha] - The end alpha of the gradient
- * @property {'gradient'} type - The
  */
 
 /**
@@ -393,7 +436,7 @@ fetchWithTimeout(jsonURL)
 *   lrcExistLike?: 'hide' | 'center' | 'left';
 *   animationSTAN?: 'circle' | 'none' | 'skew' | 'stretch';
 *   BGfilterBlurPx?: number;
-*   backgroundTypeData: T extends 'gradient' ? BackgroundGradientData undefined; 
+*   BGGradientConfig: T extends 'gradient' ? BackgroundGradientData undefined; 
 * }} AttachData
 
  */
