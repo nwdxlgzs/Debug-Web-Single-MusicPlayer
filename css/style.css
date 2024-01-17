@@ -20,7 +20,7 @@ html {
 }
 
 .blur-background::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -29,6 +29,31 @@ html {
     background-color: black;
     -webkit-mask-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 100%);
     mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.1) 100%);
+}
+
+.gradient-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    --start-gradient-color: rgba(0, 0, 0, 0) 25%;
+    --end-gradient-color: rgba(0, 0, 0, 0) 75%;
+}
+
+.gradient-background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to bottom, var(--start-gradient-color), var(--end-gradient-color))
 }
 
 .spectrum-cover-container {
@@ -156,6 +181,7 @@ html {
 }
 
 .lyrics-show-btn {
+    margin-bottom: 2px;
     background-image: url('../images/lyrics.svg');
     background-size: cover;
     background-color: transparent;
@@ -185,6 +211,7 @@ html {
 }
 
 .like-this-btn {
+    margin-bottom: 2px;
     background-image: url('../images/unlike.svg');
     background-size: cover;
     background-color: transparent;
@@ -241,10 +268,7 @@ html {
     border: none;
     cursor: pointer;
     filter: brightness(100) saturate(100%);
-
 }
-
-
 
 /* Canvas和封面的容器 */
 .spectrum-cover-container {
@@ -328,8 +352,9 @@ html {
     z-index: 2;
     text-align: center;
     align-items: center;
-    flex-basis: auto;
+
     width: 50%;
+    margin-right: 20px;
 }
 
 .lyrics-container::-webkit-scrollbar {

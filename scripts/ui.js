@@ -6,10 +6,13 @@ const timeElapsed = document.getElementById('time-elapsed');
 const totalDuration = document.getElementById('total-duration');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeControl = document.getElementById('volume-control');
-const volumeControlContainer = document.getElementById('volume-control-container');
+const volumeControlContainer = document.getElementById(
+    'volume-control-container'
+);
 const lyricsElement = document.getElementById('lyrics');
 const lyricsShowButton = document.getElementById('lyrics-show');
 const likeThisButton = document.getElementById('like-this');
+const blurBackground = document.getElementById('blur-background');
 
 let isSlideProgress = false;
 
@@ -52,6 +55,30 @@ export function changeProgress(progress, currentTime) {
     }
 }
 
+/**
+ *
+ * @param {[number,number,number]} color
+ */
+export function setGradientBackgroundColor(color) {
+    // 更换元素 class
+
+    blurBackground.classList.remove('blur-background');
+    blurBackground.classList.add('gradient-background');
+
+    // 设置为自定义 css 变量
+    blurBackground.style.setProperty(
+        '--start-gradient-color',
+        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.backgroundTypeData.startAlpha ?? 0.5}) ${window.attach.backgroundTypeData.startRange ?? "25%"} `
+    );
+
+   
+
+    blurBackground.style.setProperty(
+        '--end-gradient-color',
+        `rgba(${color[0]},${color[1]},${color[2]},${window.attach.backgroundTypeData.endAlpha ?? 1}) ${window.attach.backgroundTypeData.endRange ?? "85%"} `
+    );
+}
+
 export function changeVolume(volume) {
     volumeControl.style.display = 'block';
     volumeControl.value = volume;
@@ -85,7 +112,13 @@ export function listenPlayButtonClick(func) {
  * @param {number} duration
  */
 export function setTotalDuration(duration) {
-    if (duration == null || duration == undefined || duration == Infinity || isNaN(duration) || duration < 0) {
+    if (
+        duration == null ||
+        duration == undefined ||
+        duration == Infinity ||
+        isNaN(duration) ||
+        duration < 0
+    ) {
         return;
     }
     totalDuration.textContent = formatTime(duration);
@@ -117,7 +150,7 @@ export function listenVolumeChange(func) {
 
 // 音量按钮点击事件处理函数
 volumeBtn.addEventListener('click', function () {
-    volumeControlContainer.classList.toggle('volume-control-container__opened')
+    volumeControlContainer.classList.toggle('volume-control-container__opened');
 });
 
 songProgress.addEventListener('mousedown', () => {
@@ -136,9 +169,10 @@ document.addEventListener('click', function (event) {
 
     if (!isClickInsideVolumeContainer) {
         // 如果点击的是音量按钮或滑动条之外的地方，则隐藏音量滑动条
-        volumeControlContainer.classList.remove('volume-control-container__opened')
+        volumeControlContainer.classList.remove(
+            'volume-control-container__opened'
+        );
     }
-
 });
 
 //歌词显隐性（lrcExistLike设置hide时这个按钮也隐藏）

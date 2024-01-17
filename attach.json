@@ -8,6 +8,18 @@
     "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
     "lrcExistLike": "left",
     "animationSTAN": "stretch",
+    "backgroundType": "gradient",
+    "backgroundTypeData": {
+        "type": "gradient",
+        "startRange": "25%",
+        "endRange": "85%",
+        "colorSource": "cover",
+        "topColor": "rgba(0, 0, 0, 0.5)",
+        "bottomColor": "rgba(0,0,0, 1)",
+        "startAlpha": 0.3,
+        "endAlpha": 0.95,
+        "coverColorType": 2
+    },
     "BGfilterBlurPx": 0,
     "replace-attach-content-demo": [
         {
