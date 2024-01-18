@@ -8,6 +8,21 @@
     "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
     "lrcExistLike": "left",
     "animationSTAN": "stretch",
+    "backgroundType": "gradient",
+    "BGGradientConfig": {
+        "colorSource": [
+            "rgba(0,0,0,0.1)",
+            "rgba(0,0,0, 0.3)"
+        ],
+        "alphas": [
+            0.1,
+            0.5
+        ],
+        "ranges": [
+            25,
+            80
+        ]
+    },
     "like": true,
     "BGMusicScale": 0.1,
     "replace-attach-content-demo": [
@@ -17,10 +32,7 @@
             "songTitle": "Heartbeat",
             "artistName": "Cloudier",
             "musicURL": "./resources/Cloudier-Heartbeat.mp3",
-            "mediaType": "audio/mpeg",
-            "lrcFile": "./resources/Cloudier-Heartbeat.lrc",
-            "lrcExistLike": "left",
-            "animationSTAN": "circle"
+            "lrcFile": "./resources/Cloudier-Heartbeat.lrc"
         },
         {
             "backgroundImage": "./resources/Lulleaux-Empty Love-background.png",
@@ -28,9 +40,7 @@
             "songTitle": "Empty Love",
             "artistName": "Lulleaux",
             "musicURL": "./resources/Lulleaux-Empty Love.mp3",
-            "mediaType": "audio/mpeg",
-            "lrcFile": "./resources/Lulleaux-Empty Love.lrc",
-            "lrcExistLike": "center"
+            "lrcFile": "./resources/Lulleaux-Empty Love.lrc"
         },
         {
             "backgroundImage": "./resources/Carly Rae Jepsen-I Really Like You-background.png",
@@ -38,10 +48,7 @@
             "songTitle": "I Really Like You",
             "artistName": "Carly Rae Jepsen",
             "musicURL": "./resources/Carly Rae Jepsen-I Really Like You.mp3",
-            "mediaType": "audio/mpeg",
-            "lrcFile": "./resources/Carly Rae Jepsen-I Really Like You.lrc",
-            "lrcExistLike": "left",
-            "animationSTAN": "skew"
+            "lrcFile": "./resources/Carly Rae Jepsen-I Really Like You.lrc"
         },
         {
             "backgroundImage": "./resources/新乐尘符-提拉米苏-background.png",
@@ -49,11 +56,7 @@
             "songTitle": "提拉米苏",
             "artistName": "新乐尘符",
             "musicURL": "./resources/新乐尘符-提拉米苏.mp3",
-            "mediaType": "audio/mpeg",
-            "lrcFile": "./resources/新乐尘符-提拉米苏.lrc",
-            "lrcExistLike": "center",
-            "animationSTAN": "circle",
-            "BGfilterBlurPx": 5
+            "lrcFile": "./resources/新乐尘符-提拉米苏.lrc"
         }
     ]
 }

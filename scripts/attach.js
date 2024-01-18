@@ -40,7 +40,7 @@ window.attach.DEFAULT_JSON = {
     musicURL: './resources/sound',
     mediaType: 'audio/mpeg',
     backgroundType: 'gradient',//blur使BGfilterBlurPx有效|gradient使BGGradientConfig有效
-    BGfilterBlurPx: 10,//像素大小
+    BGfilterBlurPx: 5,//像素大小
     lrcFile: null,//null时无文件
     lrcExistLike: 'hide',//hide隐藏并且一并隐藏歌词按钮哪怕lrcFile有效，left靠左，center居中
     animationSTAN: 'circle',//circle圆周平移，stretch左右倾斜，skew变长变短，none无动画
@@ -49,7 +49,7 @@ window.attach.DEFAULT_JSON = {
         // cover使用封面，另一种直接设置颜色的方案，设置后coverThemeIndex无效
         // colorSource: [
         //     "rgba(0,0,0,0.1)",
-        //     "rgba(0,0,0, 0.5)"
+        //     "rgba(0,0,0, 0.3)"
         // ],
         alphas: [
             0.1,
@@ -63,6 +63,24 @@ window.attach.DEFAULT_JSON = {
     },
     like: true,//是否默认勾选喜欢
     BGMusicScale: 0,//背景和音频缩放参数，0为不缩放，推荐0.05
+    waveLike: 'line|circle',//(line|mirror-line)|circle
+    coverScale: true,
+    coverRotate: true,
+    withBubbles: true,
+    waveCircleConfig: {
+        lineColors: ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'],//lineColors影响圈数
+        fillColor: 'cover',//cover从封面取，否则用这里的值，形如[255,255,255]
+        fillAlphaDeep: 0.8,//每层均分这里的透明度
+        coverThemeIndex: 0,//color为cover时有效
+    },
+    waveLineConfig: {
+        barWidth: 4,
+        gapWidth: 3,
+        flip: false,
+        color: "cover",//rainbow彩色，cover从封面取，否则用这里的值，形如rgb(0,0,0)
+        coverThemeIndex: 1,//color为cover时有效
+    },
+    bubblesColor: 'white',
 };
 
 
@@ -161,10 +179,14 @@ fetchWithTimeout(jsonURL)
         //修正补全缺省的值
         const default_data = window.attach.DEFAULT_JSON;
         const default_dataBGGradientConfig = default_data.BGGradientConfig;
+        const default_datawaveCircleConfig = default_data.waveCircleConfig;
+        const default_datawaveLineConfig = default_data.waveLineConfig;
         fillDefault(data, 'backgroundImage', default_data);
         fillDefault(data, 'coverImage', default_data);
         fillDefault(data, 'backgroundType', default_data);
         fillDefault(data, 'BGGradientConfig', default_data);
+        fillDefault(data, 'waveCircleConfig', default_data);
+        fillDefault(data, 'waveLineConfig', default_data);
         fillDefault(data, 'songTitle', default_data);
         fillDefault(data, 'artistName', default_data);
         if (data.lrcFile == undefined || data.lrcFile == null) {
@@ -172,7 +194,13 @@ fetchWithTimeout(jsonURL)
         } else {
             fillDefault(data, 'lrcExistLike', { lrcExistLike: 'left' });
         }
+        fillDefault(data, 'mediaType', default_data);
         fillDefault(data, 'animationSTAN', default_data);
+        fillDefault(data, 'waveLike', default_data);
+        fillDefault(data, 'coverScale', default_data);
+        fillDefault(data, 'coverRotate', default_data);
+        fillDefault(data, 'withBubbles', default_data);
+        fillDefault(data, 'bubblesColor', default_data);
         fillDefault(data, 'BGfilterBlurPx', default_data);
         fillDefault(data, 'like', default_data);
         fillDefault(data, 'BGMusicScale', default_data);
@@ -181,6 +209,17 @@ fetchWithTimeout(jsonURL)
         fillDefault(BGGradientConfig, 'ranges', default_dataBGGradientConfig);
         fillDefault(BGGradientConfig, 'colorSource', default_dataBGGradientConfig);
         fillDefault(BGGradientConfig, 'coverThemeIndex', default_dataBGGradientConfig);
+        const waveCircleConfig = data.waveCircleConfig;
+        fillDefault(waveCircleConfig, 'lineColors', default_datawaveCircleConfig);
+        fillDefault(waveCircleConfig, 'fillColor', default_datawaveCircleConfig);
+        fillDefault(waveCircleConfig, 'fillAlphaDeep', default_datawaveCircleConfig);
+        fillDefault(waveCircleConfig, 'coverThemeIndex', default_datawaveCircleConfig);
+        const waveLineConfig = data.waveLineConfig;
+        fillDefault(waveLineConfig, 'barWidth', default_datawaveLineConfig);
+        fillDefault(waveLineConfig, 'gapWidth', default_datawaveLineConfig);
+        fillDefault(waveLineConfig, 'flip', default_datawaveLineConfig);
+        fillDefault(waveLineConfig, 'color', default_datawaveLineConfig);
+        fillDefault(waveLineConfig, 'coverThemeIndex', default_datawaveLineConfig);
         return data;
     }).then(
         (data) => {
@@ -194,6 +233,19 @@ fetchWithTimeout(jsonURL)
             window.attach.SHARE_SINGLE_DOWNLOAD_URL = data.musicURL;
             window.attach.COVER_IMAGE_URL = data.coverImage;
             window.attach.BACKGROUND_IMAGE_URL = data.backgroundImage;
+            window.attach.WAVE_LINELIKE = null;
+            if (data.waveLike.includes('mirror-line')) {
+                window.attach.WAVE_LINELIKE = 'mirror-line';
+            } else if (data.waveLike.includes('line')) {
+                window.attach.WAVE_LINELIKE = 'line';
+            }
+            window.attach.WAVE_CRICLE = data.waveLike.includes('circle') ? 'show' : 'hide';
+            window.attach.COVER_SCALE = data.coverScale;
+            window.attach.COVER_ROTATE = data.coverRotate;
+            window.attach.WITH_BUBBLES = data.withBubbles;
+            if (Array.isArray(data.waveCircleConfig.fillColor)) {
+                window.attach.MainColorForCover = data.waveCircleConfig.fillColor;
+            }
             // 更新网页属性
 
             document.getElementById('song-title').textContent = `${data.songTitle}`;

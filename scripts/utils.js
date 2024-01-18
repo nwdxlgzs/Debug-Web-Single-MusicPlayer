@@ -50,8 +50,11 @@ export function create2DSmoothedArray(data2D, windowSize) {
     const cols = data2D[0].length;
     const Zhw = Math.floor(windowSize / 2);
     const count = Math.pow(windowSize, 2);
+    let maxtoploop = (rows > 6 ? rows / 2 : 3);
+    if (maxtoploop > rows)
+        maxtoploop = rows;
     // 使用变量跟踪边界值，以避免模运算
-    for (let i = 0; i < (rows > 6 ? rows / 2 : 3); i++) {
+    for (let i = 0; i < maxtoploop; i++) {
         for (let j = 0; j < cols; j += 2) {//第一次只算偶数位
             let sum = 0;
             for (let di = -Zhw; di <= Zhw; di++) {
@@ -68,7 +71,8 @@ export function create2DSmoothedArray(data2D, windowSize) {
                     sum += data2D[rowIndex][colIndex];
                 }
             }
-            data2D[i][j] = Math.round(sum / count);
+            if (count > 0)
+                data2D[i][j] = Math.round(sum / count);
         }
     }
     for (let j = 1; j < cols; j += 2) {//奇数位靠偶数位平滑

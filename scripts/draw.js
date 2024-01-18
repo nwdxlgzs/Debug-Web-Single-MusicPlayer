@@ -50,13 +50,13 @@ class SpectrumCanvasBubble {
         ctx.globalAlpha = this.alpha;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = window.attach.recvData.bubblesColor ?? 'white';
         ctx.fill();
         ctx.restore();
     }
 }
 
-
+let STORE_palettes = null;
 const CoverImageEle = document.getElementById('cover-image');
 CoverImageEle.addEventListener('load', function () {
     const canvas = document.createElement('canvas');
@@ -81,9 +81,11 @@ CoverImageEle.addEventListener('load', function () {
     }
     try {
         const palettes = quantize(pixelArray, 2).palette();
-
-        window.attach.MainColorForCover = palettes[0];
-
+        STORE_palettes = palettes;
+        if (window.attach.recvData.waveCircleConfig.fillColor === 'cover') {
+            const coverThemeIndex_ = window.attach.recvData.waveCircleConfig.coverThemeIndex;
+            window.attach.MainColorForCover = palettes[(coverThemeIndex_ ?? 1) >= palettes.length ? 0 : coverThemeIndex_];
+        }
         if (window.attach.recvData.backgroundType === 'gradient' &&
             window.attach.recvData.BGGradientConfig.colorSource === 'cover') {
             const coverThemeIndex = window.attach.recvData.BGGradientConfig.coverThemeIndex;
@@ -114,7 +116,8 @@ function NEXT_spectrum_Seq() {
     spectrum_Seq[0] = lastArray;
 }
 let history_Seq_averages = new IntQueue(64, 0);
-const spectrumCanvas_COLORS = ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'];
+let spectrumCanvas_COLORS = ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'];
+spectrumCanvas_COLORS = window.attach.recvData.waveCircleConfig.lineColors;
 const MAX_FPS = 50;
 let lastTime = 0;
 export function draw(
@@ -176,10 +179,11 @@ export function draw(
             spectrumCanvas_canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
             const canvasCtx = spectrumCanvas_canvasCtx;
             const Layers = spectrumCanvas_COLORS.length;
-            let arrs = sliceUint8ArrayVertically(spectrum_Seq, Layers);
             const maxSampleSize = spectrumCanvas_SampleSize;
             const maxRadius = Math.min(WIDTH, HEIGHT) / 2;
-            {
+            canvasCtx.globalAlpha = 1.0;
+            if (window.attach.WITH_BUBBLES) {
+                console.log(SpectrumCanvasBubbles.length);
                 //气泡绘制
                 while (SpectrumCanvasBubbles.length < average) {
                     SpectrumCanvasBubbles.push(
@@ -195,107 +199,178 @@ export function draw(
                     }
                 });
             }
-            for (let lay_i = 0; lay_i < Layers; lay_i++) {
-                let dataArray = arrs[lay_i];
-                create2DSmoothedArray(dataArray, dataArray.length);
-                let sampledDataArray = dataArray[0];
-                const grow_aversum = sampledDataArray.reduce(
-                    (accumulator, currentValue) => {
-                        return accumulator + currentValue;
-                    }
-                );
-                sum_smoothaverage += grow_aversum;
-                // 绘制填充区域
-                let prevX = centerX; // 初始化 prevX
-                let prevY = centerY; // 初始化 prevY
-                canvasCtx.globalAlpha = 1.0;
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(centerX, centerY);
-                let FSTX = prevX;
-                let FSTY = prevY;
-                for (let i = 0; i < maxSampleSize; i++) {
-                    const value = sampledDataArray[i] + 255;
-                    const percent = value / (255 + 255);
-                    const height = percent * maxRadius;
-                    const angle =
-                        ((Math.PI * 2) / maxSampleSize) * i -
-                        0.00005 *
-                        (lay_i + 1) *
-                        Math.PI *
-                        (lastTime % (2000 / 0.0002));
-                    const x = centerX + height * Math.cos(angle);
-                    const y = centerY + height * Math.sin(angle);
-                    if (i === 0) {
-                        prevX = x; // 设置第一个点为prevX
-                        prevY = y; // 设置第一个点为prevY
-                        FSTX = prevX;
-                        FSTY = prevY;
-                        canvasCtx.moveTo(x, y);
-                    } else if (i === maxSampleSize - 1) {
-                        canvasCtx.quadraticCurveTo(prevX, prevY, FSTX, FSTY);
+            if (window.attach.WAVE_LINELIKE === 'line' || window.attach.WAVE_LINELIKE === 'mirror-line') {
+                const SEQ = spectrum_Seq[0];
+                const barWidth = window.attach.recvData.waveLineConfig.barWidth;
+                const gap = window.attach.recvData.waveLineConfig.gapWidth;
+                const flip = window.attach.recvData.waveLineConfig.flip;
+                const mirror = window.attach.WAVE_LINELIKE === 'mirror-line';
+
+
+                const radius = 190;
+                const circumference = 2 * Math.PI * radius;
+                const numBarsWhole = Math.floor(circumference / (barWidth + gap));
+                const numBars = mirror ? numBarsWhole / 2 : numBarsWhole; // 根据mirror决定柱子数量
+                const step = Math.floor(SEQ.length / numBars);
+
+                for (let i = 0; i < numBars; i++) {
+                    const startIndex = i * step;
+                    const endIndex = startIndex + step;
+                    const segment = SEQ.slice(startIndex, Math.min(endIndex, SEQ.length));
+                    const averageMagnitude = (segment.reduce((sum, value) => sum + value, 0) / segment.length) / 1.3 + 3;
+                    // 绘制柱子的函数
+                    const drawBar = (angle) => {
+                        const x1 = centerX + radius * Math.cos(angle);
+                        const y1 = centerY + radius * Math.sin(angle);
+                        const x2 = centerX + (radius + averageMagnitude) * Math.cos(angle);
+                        const y2 = centerY + (radius + averageMagnitude) * Math.sin(angle);
+                        canvasCtx.beginPath();
+                        canvasCtx.moveTo(x1, y1);
+                        canvasCtx.lineTo(x2, y2);
+                        if (window.attach.recvData.waveLineConfig.color === 'rainbow') {
+                            canvasCtx.strokeStyle = `hsl(${(i / numBarsWhole) * 360}, 100%, 50%)`;
+                        } else if (window.attach.recvData.waveLineConfig.color === 'cover') {
+                            const coverThemeIndex = window.attach.recvData.waveLineConfig.coverThemeIndex;
+                            const rgb = STORE_palettes[(coverThemeIndex ?? 1) >= STORE_palettes.length ? 0 : coverThemeIndex];
+                            canvasCtx.strokeStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+                        } else {
+                            canvasCtx.strokeStyle = window.attach.recvData.waveLineConfig.color ?? 'white';
+                        }
+                        canvasCtx.lineWidth = barWidth;
+                        canvasCtx.stroke();
+                    };
+                    if (mirror) {
+                        // 镜像情况下，绘制两条柱子
+                        const angle = ((barWidth + gap) / circumference) * i * 2 * Math.PI - Math.PI / 2;
+                        drawBar(angle + (flip ? Math.PI : 0));
+                        drawBar(-angle + Math.PI + (flip ? Math.PI : 0));
                     } else {
-                        const midpointX = (prevX + x) / 2;
-                        const midpointY = (prevY + y) / 2;
-                        canvasCtx.quadraticCurveTo(
-                            prevX,
-                            prevY,
-                            midpointX,
-                            midpointY
-                        );
-                        prevX = x;
-                        prevY = y;
+                        // 非镜像情况，绘制一条柱子
+                        const angle = (i * (barWidth + gap) * 2 * Math.PI / circumference) - Math.PI / 2;
+                        drawBar(angle + (flip ? Math.PI : 0));
                     }
                 }
-                canvasCtx.closePath();
-                canvasCtx.fillStyle = `rgba(${window.attach.MainColorForCover[0]},${window.attach.MainColorForCover[1]
-                    },${window.attach.MainColorForCover[2]},${0.8 / Layers})`;
-                // canvasCtx.fillStyle = `rgba(255,255,255,${0.8 / Layers})`;
-                canvasCtx.fill();
-                // 绘制边缘线
-                prevX = centerX; // 初始化 prevX
-                prevY = centerY; // 初始化 prevY
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(centerX, centerY);
-                FSTX = prevX;
-                FSTY = prevY;
-                for (let i = 0; i < maxSampleSize; i++) {
-                    const value = sampledDataArray[i] + 255;
-                    const percent = value / (255 + 255);
-                    const height = percent * maxRadius + 8;
-                    const angle =
-                        ((Math.PI * 2) / maxSampleSize) * i -
-                        0.00005 *
-                        (lay_i + 1) *
-                        Math.PI *
-                        (lastTime % (2000 / 0.0002));
-                    const x = centerX + height * Math.cos(angle);
-                    const y = centerY + height * Math.sin(angle);
-                    if (i === 0) {
-                        prevX = x; // 设置第一个点为prevX
-                        prevY = y; // 设置第一个点为prevY
-                        FSTX = prevX;
-                        FSTY = prevY;
-                        canvasCtx.moveTo(x, y);
-                    } else if (i === maxSampleSize - 1) {
-                        canvasCtx.quadraticCurveTo(prevX, prevY, FSTX, FSTY);
-                    } else {
-                        const midpointX = (prevX + x) / 2;
-                        const midpointY = (prevY + y) / 2;
-                        canvasCtx.quadraticCurveTo(
-                            prevX,
-                            prevY,
-                            midpointX,
-                            midpointY
-                        );
-                        prevX = x;
-                        prevY = y;
+            }
+            let arrs = sliceUint8ArrayVertically(spectrum_Seq, Layers);
+            if (window.attach.WAVE_CRICLE === 'show') {
+                for (let lay_i = 0; lay_i < Layers; lay_i++) {
+                    let dataArray = arrs[lay_i];
+                    create2DSmoothedArray(dataArray, dataArray.length);
+                    let sampledDataArray = dataArray[0];
+                    const grow_aversum = sampledDataArray.reduce(
+                        (accumulator, currentValue) => {
+                            return accumulator + currentValue;
+                        }
+                    );
+                    sum_smoothaverage += grow_aversum;
+                    // 绘制填充区域
+                    let prevX = centerX; // 初始化 prevX
+                    let prevY = centerY; // 初始化 prevY
+                    canvasCtx.beginPath();
+                    canvasCtx.moveTo(centerX, centerY);
+                    let FSTX = prevX;
+                    let FSTY = prevY;
+                    let baseValue = 255;
+                    if (window.attach.COVER_SCALE) {
+                        const average = (lay_i + 1) * sum_smoothaverage / dataArray.length;
+                        baseValue += average / 255;
                     }
+                    for (let i = 0; i < maxSampleSize; i++) {
+                        const value = sampledDataArray[i] + baseValue;
+                        const percent = value / (255 + baseValue);
+                        const height = percent * maxRadius;
+                        const angle =
+                            ((Math.PI * 2) / maxSampleSize) * i -
+                            0.00005 *
+                            (lay_i + 1) *
+                            Math.PI *
+                            (lastTime % (2000 / 0.0002));
+                        const x = centerX + height * Math.cos(angle);
+                        const y = centerY + height * Math.sin(angle);
+                        if (i === 0) {
+                            prevX = x; // 设置第一个点为prevX
+                            prevY = y; // 设置第一个点为prevY
+                            FSTX = prevX;
+                            FSTY = prevY;
+                            canvasCtx.moveTo(x, y);
+                        } else if (i === maxSampleSize - 1) {
+                            canvasCtx.quadraticCurveTo(prevX, prevY, FSTX, FSTY);
+                        } else {
+                            const midpointX = (prevX + x) / 2;
+                            const midpointY = (prevY + y) / 2;
+                            canvasCtx.quadraticCurveTo(
+                                prevX,
+                                prevY,
+                                midpointX,
+                                midpointY
+                            );
+                            prevX = x;
+                            prevY = y;
+                        }
+                    }
+                    canvasCtx.closePath();
+                    canvasCtx.fillStyle = `rgba(${window.attach.MainColorForCover[0]},${window.attach.MainColorForCover[1]
+                        },${window.attach.MainColorForCover[2]},${window.attach.recvData.waveCircleConfig.fillAlphaDeep / Layers})`;
+                    // canvasCtx.fillStyle = `rgba(255,255,255,${0.8 / Layers})`;
+                    canvasCtx.fill();
+                    // 绘制边缘线
+                    prevX = centerX; // 初始化 prevX
+                    prevY = centerY; // 初始化 prevY
+                    canvasCtx.beginPath();
+                    canvasCtx.moveTo(centerX, centerY);
+                    FSTX = prevX;
+                    FSTY = prevY;
+                    for (let i = 0; i < maxSampleSize; i++) {
+                        const value = sampledDataArray[i] + baseValue;
+                        const percent = value / (255 + baseValue);
+                        const height = percent * maxRadius + 8;
+                        const angle =
+                            ((Math.PI * 2) / maxSampleSize) * i -
+                            0.00005 *
+                            (lay_i + 1) *
+                            Math.PI *
+                            (lastTime % (2000 / 0.0002));
+                        const x = centerX + height * Math.cos(angle);
+                        const y = centerY + height * Math.sin(angle);
+                        if (i === 0) {
+                            prevX = x; // 设置第一个点为prevX
+                            prevY = y; // 设置第一个点为prevY
+                            FSTX = prevX;
+                            FSTY = prevY;
+                            canvasCtx.moveTo(x, y);
+                        } else if (i === maxSampleSize - 1) {
+                            canvasCtx.quadraticCurveTo(prevX, prevY, FSTX, FSTY);
+                        } else {
+                            const midpointX = (prevX + x) / 2;
+                            const midpointY = (prevY + y) / 2;
+                            canvasCtx.quadraticCurveTo(
+                                prevX,
+                                prevY,
+                                midpointX,
+                                midpointY
+                            );
+                            prevX = x;
+                            prevY = y;
+                        }
+                    }
+                    canvasCtx.closePath();
+                    canvasCtx.strokeStyle = spectrumCanvas_COLORS[lay_i];
+                    canvasCtx.lineWidth = 3;
+                    canvasCtx.globalAlpha = 0.7;
+                    canvasCtx.stroke();
                 }
-                canvasCtx.closePath();
-                canvasCtx.strokeStyle = spectrumCanvas_COLORS[lay_i];
-                canvasCtx.lineWidth = 3;
-                canvasCtx.globalAlpha = 0.7;
-                canvasCtx.stroke();
+            } else {
+                for (let lay_i = 0; lay_i < Layers; lay_i++) {
+                    let dataArray = arrs[lay_i];
+                    create2DSmoothedArray(dataArray, dataArray.length);
+                    let sampledDataArray = dataArray[0];
+                    const grow_aversum = sampledDataArray.reduce(
+                        (accumulator, currentValue) => {
+                            return accumulator + currentValue;
+                        }
+                    );
+                    sum_smoothaverage += grow_aversum;
+                }
             }
         }
         //coverImage旋转和缩放任务
@@ -304,14 +379,21 @@ export function draw(
             const average = sum_smoothaverage / sampledDataArray.length;
             const scale = 1 + average / 600;
             // coverImage.style.transform = `rotate(${(lastTime / 30000 * 360) % 360}deg)`;
-            coverImage.style.transform = `scale(${scale}) rotate(${((lastTime / 30000) * 360) % 360
-                }deg)`;
-            coverImageContainer.style.height = `${scale * 35}vh`;
-            coverImageContainer.style.width = `${scale * 35}vh`;
-            if (window.attach.recvData.BGMusicScale !== undefined && window.attach.recvData.BGMusicScale !== null &&
-                window.attach.recvData.BGMusicScale > 0) {
-                const scaleR = 1 + (window.attach.recvData.BGMusicScale * average) / 255;
-                BackgroundElem.style.transform = `scale(${(scaleR)})`;
+            if (window.attach.COVER_SCALE && window.attach.COVER_ROTATE) {
+                coverImage.style.transform = `scale(${scale}) rotate(${((lastTime / 30000) * 360) % 360}deg)`;
+            } else if (window.attach.COVER_ROTATE) {
+                coverImage.style.transform = `rotate(${((lastTime / 30000) * 360) % 360}deg)`;
+            } else if (window.attach.COVER_SCALE) {
+                coverImage.style.transform = `scale(${scale})`;
+            }
+            if (window.attach.COVER_SCALE) {
+                coverImageContainer.style.height = `${scale * 35}vh`;
+                coverImageContainer.style.width = `${scale * 35}vh`;
+                if (window.attach.recvData.BGMusicScale !== undefined && window.attach.recvData.BGMusicScale !== null &&
+                    window.attach.recvData.BGMusicScale > 0) {
+                    const scaleR = 1 + (window.attach.recvData.BGMusicScale * average) / 255;
+                    BackgroundElem.style.transform = `scale(${(scaleR)})`;
+                }
             }
         }
         {
