@@ -59,34 +59,29 @@ class AudioPlayer {
         const mediaSource = this.mediaSource;
 
         mediaSource.addEventListener('sourceopen', sourceOpen);
-
         async function sourceOpen() {
             try {
                 // 获取音乐文件的响应流
                 const response = await fetch(window.attach.SHARE_SINGLE_DOWNLOAD_URL);
-
-                const sourceBuffer = mediaSource.addSourceBuffer(
-                    window.attach.MEDIA_SOURCE_BUFFER_TYPE
-                ); // 音频格式需要与文件类型匹配
-
-                const reader = response.body.getReader();
-                const pump = async () => {
-                    let { done, value } = await reader.read();
-                    if (done) {
-                        mediaSource.endOfStream();
-                        // audio.play(); // 当音频数据加载完毕后播放
-                        return;
-                    }
-                    // 使用解密算法
-                    await window.attach.decrypt(value);
-                    sourceBuffer.appendBuffer(value);
-                    await new Promise(
-                        (resolve) => (sourceBuffer.onupdateend = resolve)
-                    );
-                    pump();
-                };
-
-                pump();
+                const originalResponseArrayBuffer = response.arrayBuffer;
+                const sourceBuffer = mediaSource.addSourceBuffer(window.attach.MEDIA_SOURCE_BUFFER_TYPE); // 音频格式需要与文件类型匹配
+                const originalSourceBufferAppendBuffer = sourceBuffer.appendBuffer;
+                sourceBuffer.onupdateend = function () {
+                    mediaSource.endOfStream();
+                }
+                if (!Function.prototype.toString.call(window.Response.prototype.arrayBuffer).includes("[native code]") ||
+                    !Function.prototype.toString.call(response.arrayBuffer).includes("[native code]") ||
+                    !Function.prototype.toString.call(window.SourceBuffer.prototype.appendBuffer).includes("[native code]") ||
+                    !Function.prototype.toString.call(sourceBuffer.appendBuffer).includes("[native code]") ||
+                    !Function.prototype.toString.call(window.crypto.subtle.decrypt).includes("[native code]") ||
+                    Response.prototype.arrayBuffer !== originalResponseArrayBuffer ||
+                    SourceBuffer.prototype.appendBuffer !== originalSourceBufferAppendBuffer) {
+                    return;
+                }
+                const BUFFER = new Uint8Array(await response.arrayBuffer());
+                // 使用解密算法
+                await window.attach.decrypt(BUFFER);
+                sourceBuffer.appendBuffer(BUFFER);
             } catch (e) {
                 console.error('Error fetching audio', e);
             }

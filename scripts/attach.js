@@ -1,12 +1,36 @@
 window.attach = {}; //window全局变量
-window.attach.decrypt = async function (buff) {
-    // 使用Xor算法解密
-    const key = 0x6a;
-    for (let i = 0; i < buff.length; i++) {
-        buff[i] = buff[i] ^ key;
-    }
-    return buff;
-};
+// window.attach.decrypt = async function (buff) {
+//     // 使用Xor算法解密
+//     const key = 0x6a;
+//     for (let i = 0; i < buff.length; i++) {
+//         buff[i] = buff[i] ^ key;
+//     }
+//     return buff;
+// };
+// ============对window.attach.decrypt进行保护============
+// 原始解密函数的引用
+let originalDecrypt = null;
+// 检查函数是否被修改的函数
+function isFunctionTampered(fnOriginal, fnCurrent) {
+    return fnOriginal.toString() !== fnCurrent.toString();
+}
+// 使用Object.defineProperty冻结window.attach.decrypt
+Object.defineProperty(window.attach, 'decrypt', {
+    value: async function (buff) {
+        if (isFunctionTampered(originalDecrypt, window.attach.decrypt)) {
+            return;
+        }
+        const key = 0x6a;
+        for (let i = 0; i < buff.length; i++) {
+            buff[i] = buff[i] ^ key;
+        }
+        return buff;
+    },
+    writable: false, // 标记为不可写
+    configurable: false // 标记为不可重新配置
+});
+originalDecrypt = window.attach.decrypt;
+// ============对window.attach.decrypt进行保护============
 window.attach.MainColorForCover = [255, 255, 255];
 window.attach.DEFAULT_JSON = {
     backgroundImage: './images/background.png',
