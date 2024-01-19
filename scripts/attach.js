@@ -37,7 +37,7 @@ window.attach.DEFAULT_JSON = {
     coverImage: './images/cover.png',
     songTitle: 'Unkown Song',
     artistName: 'Unkown Artist',
-    musicURL: './resources/sound',
+    musicURL: './resources/sound',//播放合成语音：媒体地址不存在
     mediaType: 'audio/mpeg',
     backgroundType: 'gradient',//blur使BGfilterBlurPx有效|gradient使BGGradientConfig有效
     BGfilterBlurPx: 5,//像素大小

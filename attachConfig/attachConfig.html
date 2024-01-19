@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>attach.json配置程序</title>
+    <link rel="stylesheet" href="./codemirror.min.css">
+    <link rel="stylesheet" href="./material.min.css">
+    <script src="./codemirror.min.js"></script>
+    <script src="./javascript.min.js"></script>
+    <script src="./show-hint.min.js"></script>
+    <link rel="stylesheet" href="./show-hint.min.css">
+    <style>
+        .CodeMirror {
+            border: 1px solid #eee;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>attach.json配置程序</h1>
+    <div>
+        <button id="format-json">格式化并检查</button>
+        <span id="json-status"></span>
+    </div>
+    <textarea id="custom-json-editor"></textarea>
+    <script>
+        // 初始化 CodeMirror
+        var editor = CodeMirror.fromTextArea(document.getElementById("custom-json-editor"), {
+            lineNumbers: true,
+            mode: { name: "javascript", json: true },
+            theme: "material",
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            lint: true
+        });
+
+        editor.setSize("100%", "80vh");
+
+        // JSON 注释数据
+        let jsonComments = {
+            "backgroundImage": "背景图片路径。\n例如: './images/background.png'",
+            "coverImage": "封面图片路径，主题色影响周边半透明波浪。\n例如: './images/cover.png'",
+            "songTitle": "显示的歌曲标题。\n默认为 'Unknown Song'",
+            "artistName": "显示的艺术家名称。\n默认为 'Unknown Artist'",
+            "musicURL": "音频文件的路径。\n例如: './resources/sound'",
+            "mediaType": "音频文件类型，一般填 'audio/mpeg'",
+            "lrcFile": "歌词文件路径，只支持lrc格式。\n当值为null时，表示无文件",
+            "lrcExistLike": "歌词显示风格。\n'center' 居中显示，'hide' 隐藏并同时隐藏歌词按钮，'left' 靠左显示",
+            "animationSTAN": "文字动画风格。\n'circle' 圆周平移，'none' 无动画，'skew' 变长变短，'stretch' 左右倾斜",
+            "BGfilterBlurPx": "背景图片模糊的像素大小。\n仅当 'backgroundType' 为 'blur' 时有效",
+            "backgroundType": "背景类型配置。\n'blur' 应用模糊效果，'gradient' 应用渐变背景",
+            "BGGradientConfig": "渐变背景配置。\n仅当 'backgroundType' 为 'gradient' 时启用",
+            "like": "是否默认勾选喜欢。\ntrue 表示默认勾选",
+            "waveLike": "封面周围频谱波纹风格。\n'line' 线形，'mirror-line' 镜像线形，'circle' 可以并存，\n'line'和'mirror-line'不可以并存",
+            "coverScale": "封面是否随音乐缩放。\ntrue 允许缩放，false 禁止缩放",
+            "coverRotate": "封面是否旋转。\ntrue 允许旋转，false 禁止旋转",
+            "withBubbles": "是否显示气泡。\ntrue 显示，false 不显示",
+            "waveCircleConfig": "圆形波形配置。\n当 'waveLike' 包含 'circle' 时启用",
+            "waveLineConfig": "线形波形配置。\n当 'waveLike' 包含 'line' 或 'mirror-line' 时启用",
+            "bubblesColor": "气泡颜色。\n可以使用 RGB 格式，例如 'rgb(255, 255, 255)' 表示白色气泡",
+            "BGMusicScale": "背景跟随音频缩放，\n0为不缩放，如果缩放则推荐参数0.05",
+            "BGGradientConfig": "渐变背景配置，\n仅当 'backgroundType' 为 'gradient' 时启用。",
+            "colorSource": "渐变颜色的来源，'cover' 时使用封面主题色，\n也可以直接指定颜色数组，例如：['rgba(0,0,0,0.1)', 'rgba(0,0,0, 0.3)']。",
+            "alphas": "透明度数组，定义渐变的开始和结束透明度。\n例如：[0.1, 0.5]，表示渐变从透明度 0.1 开始到 0.5 结束。",
+            "ranges": "透明度的范围位置，以百分比表示。\n例如：[25, 80]，表示渐变的透明度从 25% 到 80% 的位置。",
+            "coverThemeIndex": `BGGradientConfig:
+封面主题色的索引，用于从预设的主题色数组中选择一个颜色。
+例如：0 表示选择第一个主题色。
+waveCircleConfig:
+当 'fillColor' 设置为 'cover' 时生效，指定封面主题色数组中的颜色索引。
+waveLineConfig:
+当 'color' 设置为 'cover' 时生效，指定封面主题色数组中的颜色索引。`,
+            "lineColors": "圆形波纹的线条颜色数组，颜色数量同时决定了圆环的数量。\n例如：['#FFFFFF', '#FF0000']。",
+            "fillColor": "圆形波纹内部的填充颜色，使用 RGB 数组指定。\n当设置为 'cover' 时，使用封面主题色。",
+            "fillAlphaDeep": "填充颜色的透明度深度，每个圈的透明度是基于这个值平均分配的。\n例如：0.8 可以表示四个圈每个的透明度为 0.2。",
+            "barWidth": "每个频谱条的宽度，以像素为单位。",
+            "gapWidth": "频谱条之间的间隔宽度，以像素为单位。",
+            "flip": "是否水平翻转频谱条。\ntrue 表示翻转，false 表示正常显示。",
+            "color": "频谱条的颜色。\n当设置为 'cover' 时使用封面主题色；'rainbow' 时根据角度生成彩色频谱；\n也可以直接指定颜色，如 'rgb(0,0,0)'。",
+        };
+
+
+        // 设置初始 JSON 文本
+        editor.setValue(JSON.stringify({
+            backgroundImage: './images/background.png',
+            coverImage: './images/cover.png',
+            songTitle: 'Unkown Song',
+            artistName: 'Unkown Artist',
+            musicURL: './resources/sound',
+            mediaType: 'audio/mpeg',
+            backgroundType: 'gradient',
+            BGfilterBlurPx: 5,
+            lrcFile: null, lrcExistLike: 'hide',
+            animationSTAN: 'circle',
+            BGGradientConfig: {
+                colorSource: "cover",
+                alphas: [
+                    0.1,
+                    0.5
+                ],
+                ranges: [
+                    25,
+                    80
+                ],
+                coverThemeIndex: 0
+            },
+            like: true,
+            BGMusicScale: 0,
+            waveLike: 'line|circle',
+            coverScale: true,
+            coverRotate: true,
+            withBubbles: true,
+            waveCircleConfig: {
+                lineColors: ['#90E3F5', '#5C8AF4', '#BEABF0', '#E1A2E1'],
+                fillColor: 'cover',
+                fillAlphaDeep: 0.8,
+                coverThemeIndex: 0,
+            },
+            waveLineConfig: {
+                barWidth: 4,
+                gapWidth: 3,
+                flip: false,
+                color: "cover",
+                coverThemeIndex: 1,
+            },
+            bubblesColor: 'white',
+        }, null, 4));
+
+        // 编辑器光标活动事件处理
+        editor.on("cursorActivity", function () {
+            var cursor = editor.getCursor();
+            var token = editor.getTokenAt(cursor);
+
+            // 当前光标下的字符串
+            var currentString = token.string.replace(/"/g, '');
+
+            // 显示提示
+            if (jsonComments.hasOwnProperty(currentString)) {
+                var message = jsonComments[currentString];
+                editor.showHint({
+                    hint: () => {
+                        return {
+                            from: CodeMirror.Pos(cursor.line, token.start),
+                            to: CodeMirror.Pos(cursor.line, token.end),
+                            list: [{
+                                displayText: message,
+                                text: token.string
+                            }]
+                        };
+                    },
+                    completeSingle: false
+                });
+            }
+        });
+
+        // 格式化 JSON
+        document.getElementById('format-json').addEventListener('click', function () {
+            var json = editor.getValue();
+            try {
+                var json = JSON.parse(json);
+                editor.setValue(JSON.stringify(json, null, 4));
+                document.getElementById('json-status').innerHTML = 'JSON 格式正确';
+            } catch (e) {
+                document.getElementById('json-status').innerHTML = e;
+            }
+        });
+
+
+    </script>
+
+</body>
+
+</html>
