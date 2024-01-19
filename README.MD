@@ -124,7 +124,7 @@ python -m http.server
 |           bubblesColor           |                          气泡小球颜色，可以使用形如rgb(0,0,0)的颜色                          |
 
 ## attach.json辅助填写工具
-不清楚attach还会开放多少参数，所以我们简单借助CodeMirror辅助注释提示做了这个工具，[点我即可跳转](https://nwdxlgzs.github.io/Debug-Web-Single-MusicPlayer/attachConfig/autoConfig.html)。
+不清楚attach还会开放多少参数，所以我们简单借助CodeMirror辅助注释提示做了这个工具，[点我即可跳转](https://nwdxlgzs.github.io/Debug-Web-Single-MusicPlayer/attachConfig/attachConfig.html)。
 
 ## Contributors
 | 贡献者                                                       | 贡献内容        |
