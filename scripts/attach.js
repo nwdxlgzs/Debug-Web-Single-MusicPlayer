@@ -255,7 +255,8 @@ fetchWithTimeout(jsonURL)
             if (data.like && !likeThisButton.classList.contains("like-this-btn-active")) {
                 likeThisButton.classList.add('like-this-btn-active');
             }
-
+            const CoverImageEle = document.getElementById('cover-image');
+            CoverImageEle.src = window.attach.COVER_IMAGE_URL;
             const blurBackground = document.getElementById('blur-background');
             // 背景类型
             if (data.backgroundType === 'blur') {
