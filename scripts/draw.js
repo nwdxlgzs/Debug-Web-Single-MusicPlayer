@@ -183,7 +183,6 @@ export function draw(
             const maxRadius = Math.min(WIDTH, HEIGHT) / 2;
             canvasCtx.globalAlpha = 1.0;
             if (window.attach.WITH_BUBBLES) {
-                console.log(SpectrumCanvasBubbles.length);
                 //气泡绘制
                 while (SpectrumCanvasBubbles.length < average) {
                     SpectrumCanvasBubbles.push(
